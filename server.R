@@ -1,4 +1,3 @@
-
 library(shiny)
 #library(leaflet)
 library(RColorBrewer)
@@ -9,6 +8,7 @@ library(plotGoogleMaps)
 source('global.R')
 library(leafletR)
 library(rMaps)
+
 
 
 #...............................................................................
@@ -54,88 +54,132 @@ shinyServer(function(input, output) {
                        print('Validated User Input ...........')
                      #-------------------------------------------------------------------------------------------------
                      # prepare data for UI Display
-                       Display_Checked_raw_input <- Get_Display_UserInput(Checked_raw_input, adminID.db, Product_type.db)
-                       print('Prepared User Input For Display ...........')
-                       file_input <- data.frame(lapply(Display_Checked_raw_input, as.character), stringsAsFactors=FALSE)
+                       file_input <- data.frame(lapply(Checked_raw_input, as.character), stringsAsFactors=FALSE)
                        if(display.flag == 1) {display_array <<- rbind(file_input, display_array)}
                        if(display.flag == 0) {display_array <<- file_input; display.flag <<- 1}
 
                       #-------------------------------------------------------------------------------------------------
                       # Output Data in to the UI 
-#                         output$UserInput <- renderDataTable({return(display_array)}, options = list(orderClasses = TRUE))
-                     
-                     #reactive row-selection 
-#                        rowSelect <<- reactive({
-#                           if(is.null(input[["row"]])) 1 #initialize
-#                           else as.numeric(input[["row"]])
-#                           print(row)})
-#                      
-#                      
-#                      # User-selected sorting of dataset
-                          output$UserInput = renderDataTable({
-                                    addRadioButtons <- paste0('<input type="radio" name="row', 1:nrow(display_array), '" value="', 1:nrow(display_array), '">',"")
-                                    #Display table with radio buttons
-                                     cbind(Pick=addRadioButtons, display_array[, , drop=FALSE])
-                                  }, options = list(bSortClasses = TRUE, aLengthMenu = c(5, 25, 50), iDisplayLength = 25))
-                     
-                     
+                        output$UserInput <- renderDataTable({return(display_array)}, options = list(orderClasses = TRUE))
 
-                      #-------------------------------------------------------------------------------------------------
-#                      # perform data aufit and display in to the UI
-                         data_audit_array <<- Perform_Data_Audit(display_array)
-                         State = rownames(data_audit_array)
-                         data_audit_display_array <<- cbind(State, format(data_audit_array, scientific=FALSE))
-                         output$DataAudit <- renderDataTable({return(data_audit_display_array)}, options = list(orderClasses = TRUE))
+                      #---------------------------------------------------------------------------------------------
+                      # perform MNAIS data audit and display in to the UI
+                        MNAIS_display_array <- display_array[,-9]
+                        MNAISdata_audit_array <<- Perform_Data_Audit(MNAIS_display_array)
+                        x_flag = 0
 
-                         
-                         
+                        if(!is.null(MNAISdata_audit_array))
+                           {
+                            State = rownames(MNAISdata_audit_array)
+                            MNAISdata_audit_display_array <<- cbind(State, format(MNAISdata_audit_array, scientific=FALSE))
+                            output$MNAISDataAudit <- renderDataTable({return(MNAISdata_audit_display_array)}, options = list(orderClasses = TRUE))
+                            x_flag = 1
+                            print('MNAIS Data Audit computed ....')
+                           }
 
-                       # Pie Chart with Percentages
-                         output$Data_Audit_LOB_Pie   <- renderPlot({LOB_Pie_Plot(data_audit_array)})
-                         output$Data_Audit_State_TSI <- renderPlot({State_TSI_Plot(data_audit_array)})
+                       # perform WBCIS data audit and display in to the UI
+                         WBCIS_display_array   <- display_array[,-8]
+                         WBCISdata_audit_array <<- Perform_Data_Audit(WBCIS_display_array)
+                         y_flag = 0                       
+
+                         if(!is.null(WBCISdata_audit_array))
+                           {
+                            State = rownames(WBCISdata_audit_array)
+                            WBCISdata_audit_display_array <<- cbind(State, format(WBCISdata_audit_array, scientific=FALSE))
+                            output$WBCISDataAudit <- renderDataTable({return(WBCISdata_audit_display_array)}, options = list(orderClasses = TRUE))
+                            y_flag = 1
+                            print('WBCIS Data Audit computed ....')
+                           }
+                     
+                         if((x_flag == 1) && (y_flag == 0)){output$Data_Audit_LOB_Pie   <- renderPlot({LOB_Pie_Plot_1(MNAISdata_audit_array, "MNAIS Line of Business")})}
+                         if((x_flag == 0) && (y_flag == 1)){output$Data_Audit_LOB_Pie   <- renderPlot({LOB_Pie_Plot_1(WBCISdata_audit_array, "WBCIS Line of Business")})}
+                         if((x_flag == 1) && (y_flag == 1)){output$Data_Audit_LOB_Pie   <- renderPlot({LOB_Pie_Plot(MNAISdata_audit_array,WBCISdata_audit_array)})}
+                     
+                     #---------------------------------------------------------------------------------------------
+                     
+                      # Pie Chart with Percentages
+
+                        #output$Data_Audit_State_TSI <- renderPlot({State_TSI_Plot(MNAISdata_audit_array, WBCISdata_audit_array)})
                     })
           #------------------------------------------------------------------------
-          
+
+
+
+
           #------------------------------------------------------------------------
           # Download Data Audit Summary
-                      output$Download_DataAuditSummary <- downloadHandler(
-                      filename = function() { paste('Data_Audit_Summary', '.csv', sep='') },
-                      content  = function(file) {write.csv(data_audit_display_array, file)})
+                      output$Download_MNAISDataAuditSummary <- downloadHandler(
+                      filename = function() { paste('MNAIS_Data_Audit_Summary', '.csv', sep='') },
+                      content  = function(file) {write.csv(MNAISdata_audit_display_array, file)})
+          
+          
+                       output$Download_WBCISDataAuditSummary <- downloadHandler(
+                       filename = function() { paste('WBCIS_Data_Audit_Summary', '.csv', sep='') },
+                       content  = function(file) {write.csv(WBCISdata_audit_display_array, file)})
           #------------------------------------------------------------------------
+
+
 
 
           #------------------------------------------------------------------------
           # read in all single entry inputs and store in display array
             observe({
-                     input$goButton
-                     
-                     if (input$goButton == 0)
-                       return()
-                     isolate({
-                     
-                       ContractID_input <- input$Unique_Contract_Name
-                       State_input      <- input$Unique_States_input
-                       District_input   <- input$Unique_District_input
-                       Crop_input       <- input$Unique_Crop_input
-                       Season_input     <- input$Unique_Season_input
-                       TSI              <- input$TSI
-                       EPI              <- input$EPI
-                       PR               <- input$PR
-                       if(District_input == 'All'){District_input = NA}
+                         input$goButton
 
+                         if (input$goButton == 0)
+                         return()
+                         isolate({
 
-                       single_entry_input                   <- isolate(cbind(ContractID_input, State_input, District_input, Crop_input, Season_input, TSI, EPI, PR))
-                       Checked_single_entry_input.tmp       <-  as.data.frame(Check_SingleEntry_UserInput(single_entry_input,adminID.db,Exposure.db,Product_type.db))
-                       Checked_single_entry_input           <-  data.frame(lapply(Checked_single_entry_input.tmp, as.character), stringsAsFactors=FALSE)
+                         ContractID_input <- input$Unique_Contract_Name
+                         State_input      <- input$Unique_States_input
+                         District_input   <- input$Unique_District_input
+                         Crop_input       <- input$Unique_Crop_input
+                         Season_input     <- input$Unique_Season_input
+                         TSI              <- input$TSI
+                         EPI              <- input$EPI
+                         PR               <- input$PR
+                         #if(District_input == 'All'){District_input = NA}
+
+                         single_entry_input                   <<- isolate(cbind(State_input, District_input, Crop_input, Season_input, TSI, EPI, PR))
+                         Checked_single_entry_input.tmp       <-  as.data.frame(Check_UserInput(single_entry_input,adminID.db,Exposure.db,Product_type.db))
+                         Checked_single_entry_input           <-  data.frame(lapply(Checked_single_entry_input.tmp, as.character), stringsAsFactors=FALSE)
+
+                         if(display.flag > 0) {display_array  <<- rbind(Checked_single_entry_input, display_array)}
+                         if(display.flag == 0) {display_array <<- Checked_single_entry_input; display.flag <<- 1}
+
+                       #---------------------------------------------------------------------------------------------
+                       # perform MNAIS data audit and display in to the UI
+                         MNAIS_display_array <- display_array[,-9]
+                         MNAISdata_audit_array <<- Perform_Data_Audit(MNAIS_display_array)
+                         x_flag = 0
+
+                         if(!is.null(MNAISdata_audit_array))
+                           {
+                             State = rownames(MNAISdata_audit_array)
+                             MNAISdata_audit_display_array <<- cbind(State, format(MNAISdata_audit_array, scientific=FALSE))
+                             output$MNAISDataAudit <- renderDataTable({return(MNAISdata_audit_display_array)}, options = list(orderClasses = TRUE))
+                             x_flag = 1
+                           }
+
+                       # perform WBCIS data audit and display in to the UI
+                         WBCIS_display_array   <- display_array[,-8]
+                         WBCISdata_audit_array <<- Perform_Data_Audit(WBCIS_display_array)
+                         y_flag = 0                       
+
+                         if(!is.null(WBCISdata_audit_array))
+                           {
+                            State = rownames(WBCISdata_audit_array)
+                            WBCISdata_audit_display_array <<- cbind(State, format(WBCISdata_audit_array, scientific=FALSE))
+                            output$WBCISDataAudit <- renderDataTable({return(WBCISdata_audit_display_array)}, options = list(orderClasses = TRUE))
+                            y_flag = 1
+                           }
                        
+                         if((x_flag == 1) && (y_flag == 0)){output$Data_Audit_LOB_Pie   <- renderPlot({LOB_Pie_Plot_1(MNAISdata_audit_array, "MNAIS Line of Business")})}
+                         if((x_flag == 0) && (y_flag == 1)){output$Data_Audit_LOB_Pie   <- renderPlot({LOB_Pie_Plot_1(WBCISdata_audit_array, "WBCIS Line of Business")})}
+                         if((x_flag == 1) && (y_flag == 1)){output$Data_Audit_LOB_Pie   <- renderPlot({LOB_Pie_Plot(MNAISdata_audit_array,WBCISdata_audit_array)})}
                        
-                       if(display.flag > 0) {display_array  <<- rbind(Checked_single_entry_input, display_array)}
-                       if(display.flag == 0) {display_array <<- Checked_single_entry_input; display.flag <<- 1}
-                       
-                       data_audit_array <<- Perform_Data_Audit(display_array)
-                       print(data_audit_array)
+                       #---------------------------------------------------------------------------------------------
                      })
-
                    })
           #------------------------------------------------------------------------
 
@@ -147,26 +191,56 @@ shinyServer(function(input, output) {
                        if (input$goButton == 0)
                        return()
 
-#                       # display user input  
-                        # isolate({output$UserInput <- renderDataTable({return(display_array)}, options = list(orderClasses = TRUE))}) #isolate
+                        # display user input  
+                         isolate({output$UserInput <- renderDataTable({return(display_array)}, options = list(orderClasses = TRUE))}) #isolate
+                       
 
-                         isolate({
-                         output$UserInput = renderDataTable({
-                                    addRadioButtons <- paste0('<input type="radio" name="row', 1:nrow(display_array), '" value="', 1:nrow(display_array), '">',"")
-                                    cbind(Pick=addRadioButtons, display_array[, , drop=FALSE]) #Display table with radio buttons
-                                    }, options = list(bSortClasses = TRUE, aLengthMenu = c(5, 25, 50), iDisplayLength = 25))}) #isolate
+
+                       
+                       #---------------------------------------------------------------------------------------------
+                       # perform MNAIS data audit and display in to the UI
+                         MNAIS_display_array <- display_array[,-9]
+                         MNAISdata_audit_array <<- Perform_Data_Audit(MNAIS_display_array)
+                         x_flag = 0
+
+                         if(!is.null(MNAISdata_audit_array))
+                           {
+                            State = rownames(MNAISdata_audit_array)
+                            MNAISdata_audit_display_array <<- cbind(State, format(MNAISdata_audit_array, scientific=FALSE))
+                            output$MNAISDataAudit <- renderDataTable({return(MNAISdata_audit_display_array)}, options = list(orderClasses = TRUE))
+                            x_flag = 1
+                           }
+                       
+                       # perform WBCIS data audit and display in to the UI
+                         WBCIS_display_array   <- display_array[,-8]
+                         WBCISdata_audit_array <<- Perform_Data_Audit(WBCIS_display_array)
+                         y_flag = 0                       
+
+                         if(!is.null(WBCISdata_audit_array))
+                            {
+                              State = rownames(WBCISdata_audit_array)
+                              WBCISdata_audit_display_array <<- cbind(State, format(WBCISdata_audit_array, scientific=FALSE))
+                              output$WBCISDataAudit <- renderDataTable({return(WBCISdata_audit_display_array)}, options = list(orderClasses = TRUE))
+                              y_flag = 1
+                             }
+
+                         if((x_flag == 1) && (y_flag == 0)){output$Data_Audit_LOB_Pie   <- renderPlot({LOB_Pie_Plot_1(MNAISdata_audit_array, "MNAIS Line of Business")})}
+                         if((x_flag == 0) && (y_flag == 1)){output$Data_Audit_LOB_Pie   <- renderPlot({LOB_Pie_Plot_1(WBCISdata_audit_array, "WBCIS Line of Business")})}
+                         if((x_flag == 1) && (y_flag == 1)){output$Data_Audit_LOB_Pie   <- renderPlot({LOB_Pie_Plot(MNAISdata_audit_array,WBCISdata_audit_array)})}
+                       
+                       #---------------------------------------------------------------------------------------------
  
-                         if(!is.null(data_audit_array))
-                         {
- #                         # display data audit
-                             State = rownames(data_audit_array)
-                             data_audit_display_array  <- cbind(State, format(data_audit_array, scientific=FALSE))
-                             isolate({output$DataAudit <- renderDataTable({return(data_audit_display_array)}, options = list(orderClasses = TRUE))}) #isolate
-
-                           # Pie Chart with Percentages & barchart for state vs TSI
-                             output$Data_Audit_LOB_Pie   <- renderPlot({LOB_Pie_Plot(data_audit_array)  })
-                             output$Data_Audit_State_TSI <- renderPlot({State_TSI_Plot(data_audit_array)})
-                         }
+#                          if(!is.null(data_audit_array))
+#                          {
+#                            # display data audit
+#                              State = rownames(data_audit_array)
+#                              data_audit_display_array  <- cbind(State, format(data_audit_array, scientific=FALSE))
+#                              isolate({output$DataAudit <- renderDataTable({return(data_audit_display_array)}, options = list(orderClasses = TRUE))}) #isolate
+# 
+#                            # Pie Chart with Percentages & barchart for state vs TSI
+#                              output$Data_Audit_LOB_Pie   <- renderPlot({LOB_Pie_Plot(data_audit_array)  })
+#                              output$Data_Audit_State_TSI <- renderPlot({State_TSI_Plot(data_audit_array)})
+#                          }
                    })
           #------------------------------------------------------------------------
 
@@ -174,127 +248,249 @@ shinyServer(function(input, output) {
 
           #------------------------------------------------------------------------
           # Display "Dissaggregate" when go button is presses
-            observe({          
-                     input$Dissaggregate
-                     if (input$Dissaggregate == 0)
-                     return()
+            observe({
+                      input$Dissaggregate
+                      if (input$Dissaggregate == 0)
+                      return()
 
                    # allow for district errors to pass through
-                     display_array[display_array[,9]=='Crop by District not modelled',3] = NA
-                     display_array[display_array[,9]=='Crop by District not modelled',9] <- 'Good'
+                       MNAIS_display_array <- display_array[,-9]
+                       WBCIS_display_array <- display_array[,-8]
+                       
+                       if(!is.null(MNAIS_display_array))
+                           {
+                             MNAIS_display_array[MNAIS_display_array[,8]=='Crop by District not modelled',2] = NA
+                             MNAIS_display_array[MNAIS_display_array[,8]=='Crop by District not modelled',8] <- 'Good' 
 
-                     display_array[display_array[,9]=='District mismatch',3] = NA
-                     display_array[display_array[,9]=='District mismatch',9] <- 'Good'
+                             MNAIS_display_array[MNAIS_display_array[,8]=='District mismatch',2] = NA
+                             MNAIS_display_array[MNAIS_display_array[,8]=='District mismatch',8] <- 'Good'
+
+                             MNAIS_display_array = MNAIS_display_array[MNAIS_display_array[,8] == 'Good',]
+                             MNAIS_display_array[MNAIS_display_array[,2]=='All',2] = NA
+                             
+                             if(nrow(MNAIS_display_array) > 0)
+                                 {
+                                  MNAIS_display_array = Convert_Par_to_ID(MNAIS_display_array, adminID.db, Product_type.db)
+
+                                #...............................................................................
+                                # ASSUMPTION USER INPUT DOES NOT CONTAIN ANY UNMODELLED DISTRICTS ANY MORE
+                                  Exposure.db                                  <- get_mutually_exclusive_exposure(MNAIS_display_array, Exposure.db) # get mutually exclusive modelled states
+                                  MNAIS_Dissaggregated_exposure.db             <-  disaggregate_exposure(Exposure.db, MNAIS_display_array)
+                                  MNAIS_Dissaggregated_exposure.db             <<- as.data.frame(MNAIS_Dissaggregated_exposure.db)
+                                  MNAIS_Display_Dissaggregated_exposure.db     <<- Convert_ID_to_Par_Dissagregate(MNAIS_Dissaggregated_exposure.db, adminID.db, Product_type.db) 
+
+                                  MNAIS_Display_Dissaggregated_exposure.db     =  MNAIS_Display_Dissaggregated_exposure.db[,c(-6)] #remove 'is modelled' tab
+                                  MNAIS_Display_Dissaggregated_exposure.db[,5] <- format(round((as.numeric(as.character(MNAIS_Display_Dissaggregated_exposure.db[,5]))), 0), numeric = TRUE) 
+                                  MNAIS_Display_Dissaggregated_exposure.db[,6] <- format(round((as.numeric(as.character(MNAIS_Display_Dissaggregated_exposure.db[,6]))), 0), numeric = TRUE)
+
+                                  MNAIS_Display_Dissaggregated_exposure.db[,5] =   format(MNAIS_Display_Dissaggregated_exposure.db[,5], scientific = FALSE)
+                                  MNAIS_Display_Dissaggregated_exposure.db[,6] =   format(MNAIS_Display_Dissaggregated_exposure.db[,6], scientific = FALSE)
+
+                                 isolate({output$MNAISDisplayDissaggregated   <-  renderDataTable({return(MNAIS_Display_Dissaggregated_exposure.db)}, options = list(orderClasses = TRUE))}) #isolate
+                               #...............................................................................
+                               }
+                           }
                    
-                     #display_array[display_array[,3]=='All',3] <- NA
-                     #display_array[display_array[,3]=='<NA>',3] = NA
+                       if(!is.null(WBCIS_display_array))
+                          {
+                            WBCIS_display_array[WBCIS_display_array[,8]=='Crop by District not modelled',2] = NA
+                            WBCIS_display_array[WBCIS_display_array[,8]=='Crop by District not modelled',8] <- 'Good'
 
-                     display_array = display_array[display_array[,9] == 'Good',]
-                     display_array = Convert_Par_to_ID(display_array, adminID.db, Product_type.db)
+                            WBCIS_display_array[WBCIS_display_array[,8]=='District mismatch',2] = NA
+                            WBCIS_display_array[WBCIS_display_array[,8]=='District mismatch',8] <- 'Good'
 
-                    #...............................................................................
-                    # ASSUMPTION USER INPUT DOES NOT CONTAIN ANY UNMODELLED DISTRICTS ANY MORE
-                       Exposure.db  <- get_mutually_exclusive_exposure(display_array, Exposure.db) # get mutually exclusive modelled states
-                       Dissaggregated_exposure.db <- disaggregate_exposure(Exposure.db, display_array)
-                      # Dissaggregated_exposure.db <- Dissaggregated_exposure.db[,c(-6,-7)]
-                       Dissaggregated_exposure.db <<- as.data.frame(Dissaggregated_exposure.db)
-                       Display_Dissaggregated_exposure.db <<- Convert_ID_to_Par_Dissagregate(Dissaggregated_exposure.db, adminID.db, Product_type.db)
+                            WBCIS_display_array = WBCIS_display_array[WBCIS_display_array[,8] == 'Good',]
+                            
+                            if(nrow(WBCIS_display_array) > 0)
+                               {
+                                 WBCIS_display_array = Convert_Par_to_ID(WBCIS_display_array, adminID.db, Product_type.db)
 
-                       Display_Dissaggregated_exposure.db       = Display_Dissaggregated_exposure.db[,c(-7)] #remove 'is modelled' tab
-                       Display_Dissaggregated_exposure.db[,6]  <- format(round((as.numeric(as.character(Display_Dissaggregated_exposure.db[,6]))), 0), numeric = TRUE) 
-                       Display_Dissaggregated_exposure.db[,7]  <- format(round((as.numeric(as.character(Display_Dissaggregated_exposure.db[,7]))), 0), numeric = TRUE)
+                              #...............................................................................
+                              # ASSUMPTION USER INPUT DOES NOT CONTAIN ANY UNMODELLED DISTRICTS ANY MORE
+                                 Exposure.db                                  <- get_mutually_exclusive_exposure(WBCIS_display_array, Exposure.db) # get mutually exclusive modelled states
+                                 WBCIS_Dissaggregated_exposure.db             <-  disaggregate_exposure(Exposure.db, WBCIS_display_array)
+                                 WBCIS_Dissaggregated_exposure.db             <<- as.data.frame(WBCIS_Dissaggregated_exposure.db)
+                                 WBCIS_Display_Dissaggregated_exposure.db     <<- Convert_ID_to_Par_Dissagregate(WBCIS_Dissaggregated_exposure.db, adminID.db, Product_type.db) 
 
-                       Display_Dissaggregated_exposure.db[,6]  =  format(Display_Dissaggregated_exposure.db[,6], scientific = FALSE)
-                       Display_Dissaggregated_exposure.db[,7]  =  format(Display_Dissaggregated_exposure.db[,7], scientific = FALSE)
-                       Display_Dissaggregated_exposure.final     <<- Display_Dissaggregated_exposure.db[,-1] #remove contract name / id
+                                 WBCIS_Display_Dissaggregated_exposure.db     =  WBCIS_Display_Dissaggregated_exposure.db[,c(-6)] #remove 'is modelled' tab
+                                 WBCIS_Display_Dissaggregated_exposure.db[,5] <- format(round((as.numeric(as.character(WBCIS_Display_Dissaggregated_exposure.db[,6]))), 0), numeric = TRUE) 
+                                 WBCIS_Display_Dissaggregated_exposure.db[,6] <- format(round((as.numeric(as.character(WBCIS_Display_Dissaggregated_exposure.db[,7]))), 0), numeric = TRUE)
 
-                       isolate({output$DisplayDissaggregated   <- renderDataTable({return(Display_Dissaggregated_exposure.final)}, options = list(orderClasses = TRUE))}) #isolate
-                   #...............................................................................
+                                 WBCIS_Display_Dissaggregated_exposure.db[,5] =   format(WBCIS_Display_Dissaggregated_exposure.db[,5], scientific = FALSE)
+                                 WBCIS_Display_Dissaggregated_exposure.db[,6] =   format(WBCIS_Display_Dissaggregated_exposure.db[,6], scientific = FALSE)
+
+
+                                isolate({output$WBCISDisplayDissaggregated   <-  renderDataTable({return(WBCIS_Display_Dissaggregated_exposure.db)}, options = list(orderClasses = TRUE))}) #isolate
+                             #...............................................................................
+                       }     }
+                   
+                      
                   })
           #------------------------------------------------------------------------
 
-
-                #------------------------------------------------------------------------
-                # Download Dissaggregated Exposure
-                  output$Download_ExposureDissaggregation <- downloadHandler(
-                  filename = function() { paste('Dissaggregated_exposure', '.csv', sep='') },
-                  content  = function(file) {write.csv(Display_Dissaggregated_exposure.final, file)})
-                #------------------------------------------------------------------------
+          #------------------------------------------------------------------------
+          # Download Dissaggregated Exposure
+            output$Download_MNAIS_Disaggregated_Exposure <- downloadHandler(
+            filename = function() { paste('MNAIS_Dissaggregated_exposure', '.csv', sep='') },
+            content  = function(file) {write.csv(MNAIS_Display_Dissaggregated_exposure.final, file)})
+          #------------------------------------------------------------------------
 
 
           #------------------------------------------------------------------------
           # Compute Simulation
-            observe({          
+            observe({
                       input$Simulation
                       if (input$Simulation == 0)
                       return()
 
                      #...............................................................................
                      # Attach Guaranteed Yield
-                       UserInput.db   <- Dissaggregated_exposure.db
+                       UserInput.db   <- MNAIS_Dissaggregated_exposure.db
                        Historic_gy.db  = Get_Guaranteed_gy(Historic_gy.db , UserInput.db, Exposure.db)
                        Synthetic_gy.db = Get_Guaranteed_gy(Synthetic_gy.db, UserInput.db, Exposure.db)
 
                      # Replace Synthetic Guaranteed GY by Historic Guaranteed GY
-                       tmp.Historic_gy.db = Historic_gy.db[,-8:-9] #remove year and actual yield
-                       tmp.Historic_gy.db = unique(tmp.Historic_gy.db)
+                        tmp.Historic_gy.db = Historic_gy.db[,-8:-9] #remove year and actual yield
+                        tmp.Historic_gy.db = unique(tmp.Historic_gy.db)
  
-                       x = merge(Synthetic_gy.db, tmp.Historic_gy.db, by=c('State_ID','District_ID','CropSeasonID'))
-                       Synthetic_gy.db = x[,c(-10:-14)]#[,-13:-20]
-                       colnames(Synthetic_gy.db) <- c('State_ID','District_ID','CropSeasonID','TSI','Modelled','Planted_Area','Indemnity','Year','Yield','Guaranteed_GY')
+                        x = merge(Synthetic_gy.db, tmp.Historic_gy.db, by=c('State_ID','District_ID','CropSeasonID'))
+                        Synthetic_gy.db = x[,c(-10:-14)]#[,-13:-20]
+                        colnames(Synthetic_gy.db) <- c('State_ID','District_ID','CropSeasonID','TSI','Modelled','Planted_Area','Indemnity','Year','Yield','Guaranteed_GY')
                      #.................................................................................
 
                      #...............................................................................
                      # Compute Indemnity Loss
                      # gy.db = Historic_gy.db
-                       IND_LOSS_Historic_gy.db  <<- Compute_Indemnity_loss(Historic_gy.db)
-                       IND_LOSS_Synthetic_gy.db <<- Compute_Indemnity_loss(Synthetic_gy.db)
+                        IND_LOSS_Historic_gy.db          <<- Compute_Indemnity_loss(Historic_gy.db)
+                        IND_LOSS_Synthetic_gy.db         <<- Compute_Indemnity_loss(Synthetic_gy.db)
+                        
+                        LOSS_Historic_gy.db   <- Compute_aggregate(IND_LOSS_Historic_gy.db, Product_type.db, adminID.db)
+                        LOSS_Synthetic_gy.db  <- Compute_aggregate(IND_LOSS_Synthetic_gy.db, Product_type.db, adminID.db)
+                      
+#                         Display_IND_LOSS_Historic_gy.db  <<- Convert_ID_to_Par_detailed_Losses(IND_LOSS_Historic_gy.db, adminID.db, Product_type.db)
+#                         Display_IND_LOSS_Synthetic_gy.db <<- Convert_ID_to_Par_detailed_Losses(IND_LOSS_Synthetic_gy.db, adminID.db, Product_type.db)
+
+#                         Historic_State_crop_year_aggregated.db <- Compute_Crop_State_year_aggregate(IND_LOSS_Historic_gy.db, Product_type.db)
+#                         Synthetic_State_crop_year_aggregated.db <- Compute_Crop_State_year_aggregate(IND_LOSS_Synthetic_gy.db, Product_type.db)
+# 
+#                         Historic_State_year_aggregated.db <- Compute_State_year_aggregate(Historic_State_crop_year_aggregated.db)
+#                         Synthetic_State_year_aggregated.db <- Compute_State_year_aggregate(Synthetic_State_crop_year_aggregated.db)
                      #...............................................................................
 
-                     #...............................................................................
-                     # Compute Crop District Aggregation
-                       loss_Historic_gy.db          <<- Compute_Crop_District_aggregate(IND_LOSS_Historic_gy.db)
-                       loss_Synthetic_gy.db         <<- Compute_Crop_District_aggregate(IND_LOSS_Synthetic_gy.db)
-                       Display_loss_Historic_gy.db  <<- Convert_ID_to_Par_Losses(loss_Historic_gy.db, adminID.db, Product_type.db)
-                       Display_loss_Synthetic_gy.db <<- Convert_ID_to_Par_Losses(loss_Synthetic_gy.db, adminID.db, Product_type.db)
-                     #...............................................................................
+
+#                      #...............................................................................
+#                      # Compute Crop District Aggregation
+#                          loss_Historic_gy.db          <<- Compute_Crop_District_aggregate(IND_LOSS_Historic_gy.db)
+#                          loss_Synthetic_gy.db         <<- Compute_Crop_District_aggregate(IND_LOSS_Synthetic_gy.db)
+#                          Display_loss_Historic_gy.db  <<- Convert_ID_to_Par_Losses(loss_Historic_gy.db, adminID.db, Product_type.db)
+#                          Display_loss_Synthetic_gy.db <<- Convert_ID_to_Par_Losses(loss_Synthetic_gy.db, adminID.db, Product_type.db)
+#                      #...............................................................................
 
                      #...............................................................................
                      # Prepare data for output
-                        Display_loss_Historic_gy.final  <<- prepare_loss_data_for_display(Display_loss_Historic_gy.db)
-                        Display_loss_Synthetic_gy.final <<- prepare_loss_data_for_display(Display_loss_Synthetic_gy.db)
+                     #    Display_loss_Historic_gy.final  <<- prepare_loss_data_for_display(LOSS_Historic_gy.db)
+                     #   Display_loss_Synthetic_gy.final <<- prepare_loss_data_for_display(LOSS_Synthetic_gy.db)
 
-                        isolate({output$HistoricLosses  <- renderDataTable({return(Display_loss_Historic_gy.final)},  options = list(orderClasses = TRUE))}) #isolate
-                        isolate({output$ModelledLosses  <- renderDataTable({return(Display_loss_Synthetic_gy.final)}, options = list(orderClasses = TRUE))}) #isolate
+                         L1_loss_Historic_gy.final  <<- unique(LOSS_Historic_gy.db[LOSS_Historic_gy.db[,1]   == 'level1',])
+                         L2_loss_Historic_gy.final  <<- unique(LOSS_Historic_gy.db[LOSS_Historic_gy.db[,1]   == 'level2',])
+                         L3_loss_Historic_gy.final  <<- unique(LOSS_Historic_gy.db[LOSS_Historic_gy.db[,1]   == 'level3',])
+                         L4_loss_Historic_gy.final  <<- unique(LOSS_Historic_gy.db[LOSS_Historic_gy.db[,1]   == 'level4',])
+
+                         L1_loss_Synthetic_gy.final <<- unique(LOSS_Synthetic_gy.db[LOSS_Synthetic_gy.db[,1] == 'level1',])
+                         L2_loss_Synthetic_gy.final <<- unique(LOSS_Synthetic_gy.db[LOSS_Synthetic_gy.db[,1] == 'level2',])
+                         L3_loss_Synthetic_gy.final <<- unique(LOSS_Synthetic_gy.db[LOSS_Synthetic_gy.db[,1] == 'level3',])
+                         L4_loss_Synthetic_gy.final <<- unique(LOSS_Synthetic_gy.db[LOSS_Synthetic_gy.db[,1] == 'level4',])
                      #...............................................................................
-            })
 
 
-                #------------------------------------------------------------------------
-                # Download Historic Losses
-                  output$Download_historic_losses <- downloadHandler(
-                  filename = function() { paste('Historic_Losses', '.csv', sep='') },
-                  content  = function(file) {write.csv(Display_loss_Historic_gy.final, file)})
-                #------------------------------------------------------------------------
+                        Historic_summary_display <- Compute_display_aggregate(IND_LOSS_Historic_gy.db, Product_type.db, adminID.db)
+                        State = rownames(Historic_summary_display)
+                        Historic_summary_display_final <<- cbind(State, format(Historic_summary_display, scientific=FALSE))
 
-                #------------------------------------------------------------------------
-                # Download Sythetic Losses
-                   output$Download_synthetic_losses <- downloadHandler(
-                   filename = function() { paste('Synthetic_Losses', '.csv', sep='') },
-                   content  = function(file) {write.csv(Display_loss_Synthetic_gy.final, file)})
-                #------------------------------------------------------------------------
+                        Synthetic_summary_display <- Compute_display_aggregate(IND_LOSS_Synthetic_gy.db, Product_type.db, adminID.db)
+                        State = rownames(Synthetic_summary_display)
+                        Synthetic_summary_display_final <<- cbind(State, format(Synthetic_summary_display, scientific=FALSE))
+
+                        isolate({output$HistoricLosses  <- renderDataTable({return(Historic_summary_display_final)},  options = list(orderClasses = TRUE))}) #isolate
+                        isolate({output$ModelledLosses  <- renderDataTable({return(Synthetic_summary_display_final)}, options = list(orderClasses = TRUE))}) #isolate
+                     #...............................................................................
+                  })
+
+
+                   #------------------------------------------------------------------------
+                   # Download Historic Losses
+                       output$Download_historic_l1 <- downloadHandler(
+                       filename = function() { paste('Level1_Historic_Losses', '.csv', sep='') },
+                       content  = function(file) {write.csv(L1_loss_Historic_gy.final, file)})
+
+                       output$Download_historic_l2 <- downloadHandler(
+                       filename = function() { paste('Level2_Historic_Losses', '.csv', sep='') },
+                       content  = function(file) {write.csv(L2_loss_Historic_gy.final, file)})
+
+                       output$Download_historic_l3 <- downloadHandler(
+                       filename = function() { paste('Level3_Historic_Losses', '.csv', sep='') },
+                       content  = function(file) {write.csv(L3_loss_Historic_gy.final, file)})
+
+                       output$Download_historic_l4 <- downloadHandler(
+                       filename = function() { paste('Level4_Historic_Losses', '.csv', sep='') },
+                       content  = function(file) {write.csv(L4_loss_Historic_gy.final, file)})
+                   #------------------------------------------------------------------------
+
+                   #------------------------------------------------------------------------
+                   # Download Synthetic Losses
+                       output$Download_synthetic_l1 <- downloadHandler(
+                       filename = function() { paste('Level1_Synthetic_Losses', '.csv', sep='') },
+                       content  = function(file) {write.csv(L1_loss_Synthetic_gy.final, file)})
+
+                       output$Download_synthetic_l2 <- downloadHandler(
+                       filename = function() { paste('Level2_Synthetic_Losses', '.csv', sep='') },
+                       content  = function(file) {write.csv(L2_loss_Synthetic_gy.final, file)})
+
+                       output$Download_synthetic_l3 <- downloadHandler(
+                       filename = function() { paste('Level3_Synthetic_Losses', '.csv', sep='') },
+                       content  = function(file) {write.csv(L3_loss_Synthetic_gy.final, file)})
+
+                       output$Download_synthetic_l4 <- downloadHandler(
+                       filename = function() { paste('Level4_Synthetic_Losses', '.csv', sep='') },
+                       content  = function(file) {write.csv(L4_loss_Synthetic_gy.final, file)})
+                   #------------------------------------------------------------------------
+
+
  
-
-          #------------------------------------------------------------------------
-          # Display Interactive Map
-            output$myChart <- renderMap({
-             map3 <- Leaflet$new()
-             map3$tileLayer(provider = "MapQuestOpen.OSM")
-             map3$set(width = 1600, height = 800)
-             map3$setView(c(20,78), zoom = 4)
-             map3
-             })
-          #------------------------------------------------------------------------
-
-
+                   
+                   #------------------------------------------------------------------------
+                   # Display Interactive Map
+                      output$myChart <- renderMap({
+                      map3 <- Leaflet$new()
+                      map3$tileLayer(provider = "MapQuestOpen.OSM")
+                      map3$set(width = 1600, height = 800)
+                      map3$setView(c(20,78), zoom = 4)
+                      map3
+                     })
+                   #------------------------------------------------------------------------
 })
+
+
+
+
+#                      # busyIndicator
+#                      output$plot1 <- renderPlot({
+#                        if (input$busyBtn == 0) 
+#                          return()
+#                        Sys.sleep(3)
+#                        hist(rnorm(10^3))
+#                      })
+
+#reactive row-selection 
+#                        rowSelect <<- reactive({
+#                           if(is.null(input[["row"]])) 1 #initialize
+#                           else as.numeric(input[["row"]])
+#                           print(row)})
+#                      
+#                      
+#                      # User-selected sorting of dataset
+#                           output$UserInput = renderDataTable({
+#                                     addRadioButtons <- paste0('<input type="radio" name="row', 1:nrow(display_array), '" value="', 1:nrow(display_array), '">',"")
+#                                     #Display table with radio buttons
+#                                      cbind(Pick=addRadioButtons, display_array[, , drop=FALSE])
+#                                   }, options = list(bSortClasses = TRUE, aLengthMenu = c(5, 25, 50), iDisplayLength = 25))

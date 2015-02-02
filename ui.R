@@ -7,6 +7,7 @@ library(leafletR)
 library(rCharts)
 
 
+
 #...............................................................................
 # Load databases
   CropSeasons     <-  readRDS('data/CropSeasons.Rds')
@@ -35,26 +36,23 @@ library(rCharts)
   Unique_SeasonType    = lapply(Unique_SeasonType_i, as.character)
 
   shinyUI(navbarPage("IARP BETA", id="nav",
-                   
-                   
+
+
                    # allow for overflow on the drop menus
                    # Include our custom CSS
                   tabPanel("Data Input", tags$head(includeCSS("styles.css")),
-                            
-                            
-                            
-                            
+
+
+
+
                            sidebarLayout(
                              sidebarPanel(
-                              # Select user input
+                               # Contract Name  
+                               textInput(inputId = 'Unique_Contract_Name', label = 'Contract Name', value = ""),
+                               
+                               # Select user input
                                 fileInput('UserInput', 'Choose / Drop file to upload', accept = c( 'text/csv', 'text/comma-separated-values', '.csv')),
-                                
-#                                tags$hr(),
-#                                checkboxInput('header', 'Header', TRUE), radioButtons('sep', 'Separator', c(Comma=',', Semicolon=';', Tab='\t'),','),
-                              
-                              # Contract Name  
-                                textInput(inputId = 'Unique_Contract_Name', label = 'Contract Name', value = ""),
-                                
+
                               # enter state name
                                 selectInput(inputId  = 'Unique_States_input',   label = 'States',    choices   = Unique_States,      selected  = NULL,  multiple  = FALSE,  selectize = TRUE, width = NULL),
 
@@ -81,7 +79,7 @@ library(rCharts)
 
 #                               # Enter row to delete
 #                                 numericInput(inputId = 'row_number_to_delete', label = 'Delete Row Number', 0 , min = 0,  max = NA, step = NA),
-# 
+#
 #                               # Action Button
 #                                 actionButton("Delete_ui_row", "Delete Row")
 
@@ -90,69 +88,109 @@ library(rCharts)
 
                        mainPanel(
                           tabsetPanel(
-                             tabPanel('Exposure Input', actionButton("Delete_ui_row", "Delete Row"), h4("  "), dataTableOutput('UserInput')), # tabPanel
-                             tabPanel('Data Audit'    ,
+                             tabPanel('Exposure Input', h4("  "), dataTableOutput('UserInput')), # tabPanel
+                             tabPanel('MNAIS Data Audit'    ,
                                       # Download Data Audit
-                                        
+
                                         h1(' '),
                                         h4("Summary"),
                                         h1(' '),
 
-                                       dataTableOutput('DataAudit'),
-                                        
+                                       dataTableOutput('MNAISDataAudit'),
+
                                         h1(' '),
                                       # Download data audit
-                                        downloadButton('Download_DataAuditSummary', 'Download Data Audit Summary'),
+                                        downloadButton('Download_MNAISDataAuditSummary', 'Download MNAIS Data Audit Summary'),
                                          h1(' '),
                                          h1(' '),
                                          h1(' ')
-                                       
+
                                       ),
                              
+                             tabPanel('WBCIS Data Audit'    ,
+                                      # Download Data Audit
+                                      
+                                      h1(' '),
+                                      h4("Summary"),
+                                      h1(' '),
+                                      
+                                      dataTableOutput('WBCISDataAudit'),
+                                      
+                                      h1(' '),
+                                      # Download data audit
+                                      downloadButton('Download_WBCISDataAuditSummary', 'Download WBCIS Data Audit Summary'),
+                                      h1(' '),
+                                      h1(' '),
+                                      h1(' ')
+                                      
+                             ),
+
                              tabPanel('LOB and State Aggregations'    ,
                                        h4("LOB Aggregations"),
                                        plotOutput("Data_Audit_LOB_Pie",   height = "700px"),
                                        h4("State Aggregations"),
                                        plotOutput("Data_Audit_State_TSI", height = "700px")
                                      ) # tabPanel
-                                         
-                             
-                             
+
+
+
 
                           ) # tabsetPanel
                        )    # mainPanel
                        )    # SidebarLayout
-                       
+
                   ),        # Tab panel
 
-                 tabPanel("Exposure Dissaggregation", tags$head(includeCSS("styles.css")),
-                          fluidRow(actionButton("Dissaggregate", "Dissaggregate")),
-                          fluidRow(h4("Dissaggregated Exposure"), dataTableOutput('DisplayDissaggregated')),
-                          fluidRow(downloadButton('Download_ExposureDissaggregation', 'Download Dissaggregated Exposure'))
-                          ),        # Tab panel
+#                  tabPanel("Exposure Dissaggregation", tags$head(includeCSS("styles.css")),
+#                           fluidRow(actionButton("Dissaggregate", "Dissaggregate")),
+#                           fluidRow(h4("Dissaggregated Exposure"), dataTableOutput('DisplayDissaggregated')),
+#                           fluidRow(downloadButton('Download_ExposureDissaggregation', 'Download Dissaggregated Exposure'))
+#                           ),        # Tab panel
 
-                  
+
+
+                 tabPanel("Exposure Dissaggregation", tags$head(includeCSS("styles.css")),
+                          sidebarLayout(sidebarPanel(actionButton("Dissaggregate",  "Dissaggregate")), #sidebarPanel
+
+                          mainPanel(
+                              tabsetPanel(
+                                  tabPanel('MNAIS Disaggregated Exposure', dataTableOutput('MNAISDisplayDissaggregated'),h1(' '),
+                                           downloadButton('Download_MNAIS_Disaggregated_Exposure' , 'Download MNAIS Disaggregated Exposure'),h1(' ')),
+
+                                  tabPanel('WBCIS Disaggregated Exposure', dataTableOutput('WBCISDisplayDissaggregated'),h1(' '),
+                                           downloadButton('Download_WBCIS_Disaggregated_Exposure' , 'Download WBCIS Disaggregated Exposure'),h1(' '))
+
+                                          ) # tabPanel
+                                  ) # tabsetPanel
+                                )    # mainPanel
+                         ),    # SidebarLayout
+                        
+
+
                  tabPanel("Loss Calculations", tags$head(includeCSS("styles.css")),
                           sidebarLayout(
-                            sidebarPanel(actionButton("Simulation", "Calculate Loss")), #sidebarPanel
+                            sidebarPanel(actionButton("Simulation",        "Calculate Summarized Loss"),h1(' '),h1(' '),h1(' '),h1(' '),
+                                         downloadButton('Download_historic_l1'  , 'Download level 1 Historic Losses'),h1(' '),
+                                         downloadButton('Download_historic_l2'  , 'Download level 2 Historic Losses'),h1(' '),
+                                         downloadButton('Download_historic_l3'  , 'Download level 3 Historic Losses'),h1(' '),
+                                         downloadButton('Download_historic_l4'  , 'Download level 4 Historic Losses'),h1(' '),h1(' '),h1(' '),h1(' '),
+                                         downloadButton('Download_synthetic_l1' , 'Download level 1 Synthetic Losses'),h1(' '),
+                                         downloadButton('Download_synthetic_l2' , 'Download level 2 Synthetic Losses'),h1(' '),
+                                         downloadButton('Download_synthetic_l3' , 'Download level 3 Synthetic Losses'),h1(' '),
+                                         downloadButton('Download_synthetic_l4' , 'Download level 4 Synthetic Losses')
+                                         ), #sidebarPanel
 
                             mainPanel(
                               tabsetPanel(
-                                tabPanel('Historic Losses', dataTableOutput('HistoricLosses'), downloadButton('Download_historic_losses' , 'Download Historic Losses')), # tabPanel
-                                tabPanel('Synthetic Losses', dataTableOutput('ModelledLosses'), downloadButton('Download_synthetic_losses', 'Download Synthetic Losses')) # tabPanel
+                                tabPanel('Historic Losses', dataTableOutput('HistoricLosses')), # tabPanel
+
+                                tabPanel('Synthetic Losses', dataTableOutput('ModelledLosses')) # tabPanel
                                 ) # tabPanel
                               ) # tabsetPanel
                             )    # mainPanel
                           ),    # SidebarLayout
-                            
 
-                  tabPanel("Interactive Map", chartOutput("myChart", 'leaflet')         
 
-                          
-                 )        # Tab panel
-                          
-                          
-
-  
+                  tabPanel("Interactive Map", chartOutput("myChart", 'leaflet'))        # Tab panel
 )) #Nav bar page
 
