@@ -257,13 +257,14 @@ shinyServer(function(input, output) {
                        MNAIS_display_array <- display_array[,-9]
                        WBCIS_display_array <- display_array[,-8]
                        
+                       options(warn=-1)
                        if(!is.null(MNAIS_display_array))
                            {
-                             MNAIS_display_array[MNAIS_display_array[,8]=='Crop by District not modelled',2] = NA
-                             MNAIS_display_array[MNAIS_display_array[,8]=='Crop by District not modelled',8] <- 'Good' 
+                             MNAIS_display_array[MNAIS_display_array=='Crop by District not modelled'] = NA
+                             MNAIS_display_array[MNAIS_display_array=='Crop by District not modelled'] <- 'Good' 
 
-                             MNAIS_display_array[MNAIS_display_array[,8]=='District mismatch',2] = NA
-                             MNAIS_display_array[MNAIS_display_array[,8]=='District mismatch',8] <- 'Good'
+                             MNAIS_display_array[MNAIS_display_array=='District mismatch'] = NA
+                             MNAIS_display_array[MNAIS_display_array=='District mismatch'] <- 'Good'
 
                              MNAIS_display_array = MNAIS_display_array[MNAIS_display_array[,8] == 'Good',]
                              MNAIS_display_array[MNAIS_display_array=='All'] = NA
@@ -324,7 +325,8 @@ shinyServer(function(input, output) {
                                 isolate({output$WBCISDisplayDissaggregated   <-  renderDataTable({return(WBCIS_Display_Dissaggregated_exposure.db)}, options = list(orderClasses = TRUE))}) #isolate
                              #...............................................................................
                        }     }
-                   
+                     
+                     options(warn=0)
                       
                   })
           #------------------------------------------------------------------------
