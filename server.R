@@ -254,54 +254,57 @@ shinyServer(function(input, output) {
                       return()
 
                    # allow for district errors to pass through
+                       display_array[display_array == 'All'] <- NA
                        MNAIS_display_array <- display_array[,-9]
                        WBCIS_display_array <- display_array[,-8]
-                       
+                       display_array <<- NULL
+
                        options(warn=-1)
                        if(!is.null(MNAIS_display_array))
                            {
-                             MNAIS_display_array[MNAIS_display_array=='Crop by District not modelled'] = NA
-                             MNAIS_display_array[MNAIS_display_array=='Crop by District not modelled'] <- 'Good' 
+#                              MNAIS_display_array[MNAIS_display_array=='Crop by District not modelled'] = NA
+#                              MNAIS_display_array[MNAIS_display_array=='Crop by District not modelled'] <- 'Good' 
+#
+#                              MNAIS_display_array[MNAIS_display_array=='District mismatch'] = NA
+#                              MNAIS_display_array[MNAIS_display_array=='District mismatch'] <- 'Good'
 
-                             MNAIS_display_array[MNAIS_display_array=='District mismatch'] = NA
-                             MNAIS_display_array[MNAIS_display_array=='District mismatch'] <- 'Good'
+                             MNAIS_display_array = as.data.frame(MNAIS_display_array[MNAIS_display_array[,8] == 'Good',])
+                       
 
-                             MNAIS_display_array = MNAIS_display_array[MNAIS_display_array[,8] == 'Good',]
-                             MNAIS_display_array[MNAIS_display_array=='All'] = NA
-                             
                              if(nrow(MNAIS_display_array) > 0)
                                  {
                                   MNAIS_display_array = Convert_Par_to_ID(MNAIS_display_array, adminID.db, Product_type.db)
 
                                 #...............................................................................
                                 # ASSUMPTION USER INPUT DOES NOT CONTAIN ANY UNMODELLED DISTRICTS ANY MORE
-                                  Exposure.db                                  <- get_mutually_exclusive_exposure(MNAIS_display_array, Exposure.db) # get mutually exclusive modelled states
+                                  Exposure.db                                  <-  get_mutually_exclusive_exposure(MNAIS_display_array, Exposure.db) # get mutually exclusive modelled states
                                   MNAIS_Dissaggregated_exposure.db             <-  disaggregate_exposure(Exposure.db, MNAIS_display_array)
                                   MNAIS_Dissaggregated_exposure.db             <<- as.data.frame(MNAIS_Dissaggregated_exposure.db)
                                   MNAIS_Display_Dissaggregated_exposure.db     <<- Convert_ID_to_Par_Dissagregate(MNAIS_Dissaggregated_exposure.db, adminID.db, Product_type.db) 
 
-                                  MNAIS_Display_Dissaggregated_exposure.db     =  MNAIS_Display_Dissaggregated_exposure.db[,c(-6)] #remove 'is modelled' tab
-                                  MNAIS_Display_Dissaggregated_exposure.db[,5] <- format(round((as.numeric(as.character(MNAIS_Display_Dissaggregated_exposure.db[,5]))), 0), numeric = TRUE) 
-                                  MNAIS_Display_Dissaggregated_exposure.db[,6] <- format(round((as.numeric(as.character(MNAIS_Display_Dissaggregated_exposure.db[,6]))), 0), numeric = TRUE)
+                                  MNAIS_Display_Dissaggregated_exposure.db     =   MNAIS_Display_Dissaggregated_exposure.db[,c(-6)] #remove 'is modelled' tab
+                                  MNAIS_Display_Dissaggregated_exposure.db[,5] <-  format(round((as.numeric(as.character(MNAIS_Display_Dissaggregated_exposure.db[,5]))), 0), numeric = TRUE) 
+                                  MNAIS_Display_Dissaggregated_exposure.db[,6] <-  format(round((as.numeric(as.character(MNAIS_Display_Dissaggregated_exposure.db[,6]))), 0), numeric = TRUE)
 
                                   MNAIS_Display_Dissaggregated_exposure.db[,5] =   format(MNAIS_Display_Dissaggregated_exposure.db[,5], scientific = FALSE)
                                   MNAIS_Display_Dissaggregated_exposure.db[,6] =   format(MNAIS_Display_Dissaggregated_exposure.db[,6], scientific = FALSE)
+                                  MNAIS_Display_Dissaggregated_exposure.final  <-  MNAIS_Display_Dissaggregated_exposure.db
 
-                                 isolate({output$MNAISDisplayDissaggregated   <-  renderDataTable({return(MNAIS_Display_Dissaggregated_exposure.db)}, options = list(orderClasses = TRUE))}) #isolate
+                                  isolate({output$MNAISDisplayDissaggregated   <-  renderDataTable({return(MNAIS_Display_Dissaggregated_exposure.final)}, options = list(orderClasses = TRUE))}) #isolate
                                #...............................................................................
                                }
                            }
                    
                        if(!is.null(WBCIS_display_array))
                           {
-                            WBCIS_display_array[WBCIS_display_array[,8]=='Crop by District not modelled',2] = NA
-                            WBCIS_display_array[WBCIS_display_array[,8]=='Crop by District not modelled',8] <- 'Good'
-
-                            WBCIS_display_array[WBCIS_display_array[,8]=='District mismatch',2] = NA
-                            WBCIS_display_array[WBCIS_display_array[,8]=='District mismatch',8] <- 'Good'
+#                             WBCIS_display_array[WBCIS_display_array[,8]=='Crop by District not modelled',2] = NA
+#                             WBCIS_display_array[WBCIS_display_array[,8]=='Crop by District not modelled',8] <- 'Good'
+# 
+#                             WBCIS_display_array[WBCIS_display_array[,8]=='District mismatch',2] = NA
+#                             WBCIS_display_array[WBCIS_display_array[,8]=='District mismatch',8] <- 'Good'
 
                             WBCIS_display_array = WBCIS_display_array[WBCIS_display_array[,8] == 'Good',]
-                            WBCIS_display_array[WBCIS_display_array=='All'] = NA
+                            #WBCIS_display_array[WBCIS_display_array=='All'] = NA
                             
                             if(nrow(WBCIS_display_array) > 0)
                                {
@@ -320,12 +323,13 @@ shinyServer(function(input, output) {
 
                                  WBCIS_Display_Dissaggregated_exposure.db[,5] =   format(WBCIS_Display_Dissaggregated_exposure.db[,5], scientific = FALSE)
                                  WBCIS_Display_Dissaggregated_exposure.db[,6] =   format(WBCIS_Display_Dissaggregated_exposure.db[,6], scientific = FALSE)
+                                  
+                                 WBCIS_Display_Dissaggregated_exposure.final <- WBCIS_Display_Dissaggregated_exposure.db
 
-
-                                isolate({output$WBCISDisplayDissaggregated   <-  renderDataTable({return(WBCIS_Display_Dissaggregated_exposure.db)}, options = list(orderClasses = TRUE))}) #isolate
+                                isolate({output$WBCISDisplayDissaggregated   <-  renderDataTable({return(WBCIS_Display_Dissaggregated_exposure.final)}, options = list(orderClasses = TRUE))}) #isolate
                              #...............................................................................
                        }     }
-                     
+
                      options(warn=0)
                       
                   })
