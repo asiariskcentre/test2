@@ -266,7 +266,7 @@ shinyServer(function(input, output) {
                              MNAIS_display_array[MNAIS_display_array[,8]=='District mismatch',8] <- 'Good'
 
                              MNAIS_display_array = MNAIS_display_array[MNAIS_display_array[,8] == 'Good',]
-                             MNAIS_display_array[MNAIS_display_array[,2]=='All',2] = NA
+                             MNAIS_display_array[MNAIS_display_array=='All'] = NA
                              
                              if(nrow(MNAIS_display_array) > 0)
                                  {
@@ -300,6 +300,7 @@ shinyServer(function(input, output) {
                             WBCIS_display_array[WBCIS_display_array[,8]=='District mismatch',8] <- 'Good'
 
                             WBCIS_display_array = WBCIS_display_array[WBCIS_display_array[,8] == 'Good',]
+                            WBCIS_display_array[WBCIS_display_array=='All'] = NA
                             
                             if(nrow(WBCIS_display_array) > 0)
                                {
