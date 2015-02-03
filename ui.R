@@ -182,9 +182,9 @@ library(rCharts)
 
                             mainPanel(
                               tabsetPanel(
-                                tabPanel('Historic Losses', dataTableOutput('HistoricLosses')), # tabPanel
+                                tabPanel('Historic Losses', h4("Total Indemnity Loss / Total Loss"),dataTableOutput('HistoricLosses')), # tabPanel
 
-                                tabPanel('Synthetic Losses', dataTableOutput('ModelledLosses')) # tabPanel
+                                tabPanel('Synthetic Losses', h4("Total Indemnity Loss / Total Loss"), dataTableOutput('ModelledLosses')) # tabPanel
                                 ) # tabPanel
                               ) # tabsetPanel
                             )    # mainPanel
