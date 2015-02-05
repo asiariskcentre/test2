@@ -88,7 +88,7 @@ library(rCharts)
 
                        mainPanel(
                           tabsetPanel(
-                             tabPanel('Exposure Input', h4("  "), dataTableOutput('UserInput')), # tabPanel
+                             tabPanel('Exposure Input', h4("  "), dataTableOutput('UserInput'), downloadButton('Download_DisplayArray', 'Download User Input')), # tabPanel
                              tabPanel('MNAIS Data Audit'    ,
                                       # Download Data Audit
 
@@ -160,35 +160,56 @@ library(rCharts)
                                   tabPanel('WBCIS Disaggregated Exposure', dataTableOutput('WBCISDisplayDissaggregated'),h1(' '),
                                            downloadButton('Download_WBCIS_Disaggregated_Exposure' , 'Download WBCIS Disaggregated Exposure'),h1(' '))
 
-                                          ) # tabPanel
-                                  ) # tabsetPanel
-                                )    # mainPanel
-                         ),    # SidebarLayout
-                        
+                                          )# tabPanel
+                                  )# tabsetPanel
+                                )# mainPanel
+                         ),# SidebarLayout
 
 
-                 tabPanel("Loss Calculations", tags$head(includeCSS("styles.css")),
+                 tabPanel("MNAIS Loss Calculations", tags$head(includeCSS("styles.css")),
                           sidebarLayout(
-                            sidebarPanel(actionButton("Simulation",        "Calculate Summarized Loss"),h1(' '),h1(' '),h1(' '),h1(' '),
-                                         downloadButton('Download_historic_l1'  , 'Download level 1 Historic Losses'),h1(' '),
-                                         downloadButton('Download_historic_l2'  , 'Download level 2 Historic Losses'),h1(' '),
-                                         downloadButton('Download_historic_l3'  , 'Download level 3 Historic Losses'),h1(' '),
-                                         downloadButton('Download_historic_l4'  , 'Download level 4 Historic Losses'),h1(' '),h1(' '),h1(' '),h1(' '),
+                            sidebarPanel(actionButton  ('MNAIS_Simulation'      , 'Calculate Summarized Loss'       ) ,h1(' '),h1(' '),h1(' '),h1(' '),
+                                         downloadButton('Download_historic_l1'  , 'Download level 1 Historic Losses') ,h1(' '),
+                                         downloadButton('Download_historic_l2'  , 'Download level 2 Historic Losses') ,h1(' '),
+                                         downloadButton('Download_historic_l3'  , 'Download level 3 Historic Losses') ,h1(' '),
+                                         downloadButton('Download_historic_l4'  , 'Download level 4 Historic Losses') ,h1(' '),
+                                         downloadButton('Download_historic_l5'  , 'Download level 5 Historic Losses') ,h1(' '),h1(' '),h1(' '),h1(' '),
                                          downloadButton('Download_synthetic_l1' , 'Download level 1 Synthetic Losses'),h1(' '),
                                          downloadButton('Download_synthetic_l2' , 'Download level 2 Synthetic Losses'),h1(' '),
                                          downloadButton('Download_synthetic_l3' , 'Download level 3 Synthetic Losses'),h1(' '),
-                                         downloadButton('Download_synthetic_l4' , 'Download level 4 Synthetic Losses')
-                                         ), #sidebarPanel
+                                         downloadButton('Download_synthetic_l4' , 'Download level 4 Synthetic Losses'),h1(' '),
+                                         downloadButton('Download_synthetic_l5' , 'Download level 5 Synthetic Losses'),h1(' '),h1(' '),h1(' '),h1(' ')
+                                         ),#sidebarPanel
 
                             mainPanel(
                               tabsetPanel(
-                                tabPanel('Historic Losses', h4("Total Indemnity Loss / Total Loss"),dataTableOutput('HistoricLosses')), # tabPanel
+                                tabPanel('Historic Losses', h4("Total Indemnity Loss / Total TSI") ,dataTableOutput('HistoricLosses')), # tabPanel
 
-                                tabPanel('Synthetic Losses', h4("Total Indemnity Loss / Total Loss"), dataTableOutput('ModelledLosses')) # tabPanel
+                                tabPanel('Synthetic Losses', h4("Total Indemnity Loss / Total TSI"), dataTableOutput('ModelledLosses')) # tabPanel
                                 ) # tabPanel
                               ) # tabsetPanel
-                            )    # mainPanel
-                          ),    # SidebarLayout
+                            ) # mainPanel
+                          ),# SidebarLayout
+
+                tabPanel("WBCIS Loss Calculations", tags$head(includeCSS("styles.css")),
+                        sidebarLayout(
+                          sidebarPanel(actionButton  ('WBCIS_Simulation'   , 'Calculate WBCIS Loss') ,h1(' '),h1(' '),h1(' '),h1(' '),
+                                       downloadButton('Download_WBCIS_l1'  , 'Download level 1 WBCIS Losses') ,h1(' '),
+                                       downloadButton('Download_WBCIS_l2'  , 'Download level 2 WBCIS Losses') ,h1(' '),
+                                       downloadButton('Download_WBCIS_l3'  , 'Download level 3 WBCIS Losses') ,h1(' '),
+                                       downloadButton('Download_WBCIS_l4'  , 'Download level 4 WBCIS Losses') ,h1(' '),
+                                       downloadButton('Download_WBCIS_l5'  , 'Download level 5 WBCIS Losses') ,h1(' '),h1(' '),h1(' '),h1(' ')
+                                      ),#sidebarPanel
+
+                         mainPanel(
+                            tabsetPanel(
+                              tabPanel('WBCIS Losses', h4("Detailed Aggregated Losses") ,dataTableOutput('WBCISLosses')) # tabPanel
+
+                               )# tabPanel
+                             )# tabsetPanel
+                           )# mainPanel
+                        ),# SidebarLayout
+
 
 
                   tabPanel("Interactive Map", chartOutput("myChart", 'leaflet'))        # Tab panel
