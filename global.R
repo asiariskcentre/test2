@@ -251,9 +251,6 @@
  }
  #...............................................................................
  
- 
- 
- 
  #...............................................................................
  # Compute data audit output
    Perform_Data_Audit <- function(display_array)
@@ -306,8 +303,6 @@
               #...............................................................................
        }
  #...............................................................................
-
- 
 
  #...............................................................................
  # Convert all state, district and crop season to ID's
@@ -369,8 +364,6 @@
  }
  #...............................................................................
  
- 
- 
  #...............................................................................
  # Convert all state, district and crop season to ID's
  Convert_ID_to_Par_Dissagregate <- function(Dissaggregated_exposure.db, adminID.db, Product_type.db)
@@ -415,9 +408,6 @@
    return(converted)
  }
  #...............................................................................
- 
- 
- 
  
  #...............................................................................
  # Convert all state, district and crop season to ID's
@@ -489,9 +479,6 @@
         return(converted)
        }
  #...............................................................................
- 
- 
-    
     
 #...............................................................................
 # get mutually exclusive modelled states
@@ -522,7 +509,6 @@
          return(Exposure.db)
         }
 #...............................................................................
-
 
 #...............................................................................
 # Disaggregate exposure
@@ -733,8 +719,7 @@
         
      }
 #...............................................................................
-
-   
+  
    #...............................................................................
    # Disaggregate exposure
    disaggregate_exposure_WBCIS <- function(Exposure.db, UserInput.db)
@@ -976,9 +961,6 @@
           }
 #...............................................................................
 
-
-
-
 #...............................................................................
 # Compute average historic yield
   Get_Guaranteed_gy<-function(gy.db, UserInput.db, Exposure.db)
@@ -996,9 +978,6 @@
          return(final_gy)
       }
 #...............................................................................
-
-
-
 
 #...............................................................................
 # Compute Indemnity Loss
@@ -1038,7 +1017,6 @@
        }
 #...............................................................................
 
-
 #...............................................................................
 # Compute Aggregation
   Compute_Crop_District_aggregate <- function(GY.db)
@@ -1077,9 +1055,6 @@
           return(tmp.gy.final.db)
        }
 #...............................................................................
-
-
-
 
 #...............................................................................
 # LOB Pie Plot
@@ -1122,8 +1097,7 @@
 
         pie(slices,labels = lbls, col=rainbow(length(lbls)), main=heading)
    }
- #...............................................................................
-
+#...............................................................................
 
 #...............................................................................
 # LOB Pie Plot
@@ -1152,8 +1126,6 @@
     }
 #...............................................................................
 
-
-
 #...............................................................................
 # Round off all numeric numbers
       round_df <- function(x, digits)
@@ -1167,8 +1139,6 @@
                   }
 #...............................................................................
 
-
-
  #...............................................................................
  # Assemble product type database
    get_Product_type_db <- function(CropSeasons)
@@ -1181,7 +1151,6 @@
          return(Product_type.db)
        }
  #...............................................................................
- 
  
  #...............................................................................
  # Assemble AdminID database
@@ -1205,7 +1174,6 @@
         return(adminID.db)
        }
  #...............................................................................
- 
  
  #...............................................................................  
  # Assemble Exposure DB
@@ -1236,10 +1204,7 @@
           return(Exposure.db)
          }
  #...............................................................................  
- 
- 
- 
- 
+
  #...............................................................................  
  # Assemble GY DB
    get_gy_db <- function(gy.db, Risk_Items, adminID.db)
@@ -1262,8 +1227,6 @@
           return(final_gy.db)
          }
  #............................................................................... 
- 
- 
  
  #...............................................................................
  # Prepare loss data for output
@@ -1308,18 +1271,6 @@
             return(gy.db)
           }
  #...............................................................................
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
 
      #...............................................................................
      # Compute Aggregation
@@ -1419,7 +1370,6 @@
      }
      #...............................................................................
  
- 
      #...............................................................................
      # Compute Aggregation
        Compute_State_year_aggregate <- function(gy.db)
@@ -1468,11 +1418,6 @@
             }
      #...............................................................................
  
-
- 
- 
- 
- 
      #...............................................................................
      # Convert all state, district and crop season to ID's
        Convert_ID_to_Par_detailed_Losses2 <- function(x, adminID.db, Product_type.db)
@@ -1503,9 +1448,6 @@
                return(converted)
              }
       #...............................................................................
- 
- 
- 
 
    #...............................................................................
    # Compute Aggregation ** 
@@ -1615,11 +1557,6 @@
              return(final)
      }
    #...............................................................................
-               
-   
-   
-               
-               
    
    #...............................................................................
    # Compute Aggregation ** 
@@ -1680,18 +1617,6 @@
    }
    #...............................................................................
 
-
-
-
-
-
-
-
-
-
-
-
-
    #...............................................................................
    # Convert all state, district and crop season to ID's
      Convert_ID_to_Par_WBCIS <- function(x, adminID.db, Product_type.db)
@@ -1727,7 +1652,6 @@
                  return(converted)
                }
    #...............................................................................
-   
 
    #...............................................................................
    # Compute Aggregation ** 
@@ -1869,962 +1793,3 @@
      return(final)
    }
    #...............................................................................
-
-   
-   
-   
-   
-   
-   
-   #    
-   #    #...............................................................................
-   #    # Disaggregate exposure
-   #    disaggregate_exposure_WBCIS <- function(Exposure.db, UserInput.db)
-   #    {
-   #      
-   #      #   UserInput.db = WBCIS_display_array
-   #      
-   #      #aggregate data at respective admin level to avoid 
-   #      x=UserInput.db[,c(-5,-6)] #remove EPI and PR
-   #      agg_flag = 0
-   #      
-   #      
-   #      CropSeason_levels  = unique(x$CropSeasonID)
-   #      for(i in 1:length(CropSeason_levels))
-   #      {
-   #        cs_id = CropSeason_levels[i]
-   #        cropseason.db = x[x[,3] == cs_id,]
-   #        state_levels     = unique(cropseason.db$State_ID)
-   #        
-   #        for(j in 1:length(state_levels))
-   #        {
-   #          s_id     = state_levels[j]
-   #          state.db = cropseason.db[cropseason.db[,1] == s_id,]
-   #          
-   #          state.db[,2][is.na(state.db[,2])] <- -9999
-   #          District_levels  = unique(state.db$District_ID)
-   #          
-   #          for(k in 1:length(District_levels))
-   #          {
-   #            
-   #            d_id = District_levels[k]
-   #            district.db = state.db[state.db[,2] == d_id,]
-   #            
-   #            sumTSI = sum(as.numeric(district.db[,4]))
-   #            tmp = district.db[1,]
-   #            tmp[,4] = sumTSI
-   #            tmp[tmp == -9999] <- NA
-   #            
-   #            if(agg_flag == 1) {tmp.x = rbind(tmp.x, tmp)}
-   #            if(agg_flag == 0) {tmp.x = tmp; agg_flag = 1}
-   #          }
-   #        }
-   #      }
-   #      
-   #      UserInput.db = tmp.x
-   #      
-   #      #Initiate data
-   #      db.flag = 0
-   #      UI_CropSeasonID  = unique(UserInput.db$CropSeasonID)
-   #      
-   #      for(i in 1:length(UI_CropSeasonID))
-   #      {
-   #        CS_id      = UI_CropSeasonID[i]
-   #        ui.Crop.db <- UserInput.db[UserInput.db[,3] == CS_id,]
-   #        ex.Crop.db <- Exposure.db [Exposure.db [,3] == CS_id,]
-   #        
-   #        UI_StateID = unique(ui.Crop.db$State_ID)
-   #        
-   #        for(j in 1:length(UI_StateID))
-   #        {
-   #          TRUE_Count  = 0;
-   #          FALSE_Count = 0;
-   #          
-   #          st_id            =  UI_StateID[j]
-   #          ui.state_crop.db <- ui.Crop.db[ui.Crop.db[,1] == st_id,]
-   #          ex.state_crop.db <- ex.Crop.db[ex.Crop.db[,2] == st_id,]
-   #          
-   #          #Join Exposure and User input together
-   #          tmp_contract_id  =  ui.Crop.db$Contract_Number[1]
-   #          tmp.db           = merge(ui.state_crop.db, ex.state_crop.db, by='District_ID', all='TRUE')
-   #          
-   #          state_crop.db    = cbind(st_id, tmp.db$District_ID, CS_id, tmp.db$TSI, 
-   #                                   tmp.db[,11], tmp.db$Planted_Area, tmp.db[,9])
-   #                                #  Modelled                         Indemnity
-   #          colnames(state_crop.db) <- c('State_ID', 'District_ID', 'CropSeasonID',  'TSI', 'Modelled', 'Planted_Area', 'Indemnity')
-   #          
-   #          
-   #          #determine if it is reported only at state / state & district / district
-   #          options(warn=-1)
-   #          rm(st_cr_district, district_test, tmp.flag.TRUE, tmp.flag.FALSE, TRUE_count, reporting_char)
-   #          options(warn=0)  
-   #          
-   #          st_cr_district  = ui.state_crop.db$District_ID
-   #          
-   #          district_test   = is.na(st_cr_district)
-   #          district_test   = as.data.frame(table(district_test))
-   #          
-   #          tmp.flag.TRUE   = district_test[district_test[,1] == 'TRUE',]
-   #          tmp.flag.FALSE  = district_test[district_test[,1] == 'FALSE',]
-   #          
-   #          if(nrow(tmp.flag.TRUE) > 0) {TRUE_count  = district_test[district_test[,1] == 'TRUE',] ; TRUE_Count = TRUE_count[1,2]}
-   #          if(nrow(tmp.flag.FALSE) > 0){FALSE_count = district_test[district_test[,1] == 'FALSE',]; FALSE_Count = FALSE_count[1,2]}
-   #          
-   #          # TRUE count refers entries where districts are NOT reported, 
-   #          # False count refers to number entries where districts are reported
-   #          if((TRUE_Count > 0 ) & (FALSE_Count > 0) ) {reporting_char = 1} #Both State level and District level are reported
-   #          if((TRUE_Count == 0) & (FALSE_Count > 0) ) {reporting_char = 2} #All entires are reported at district level
-   #          if((TRUE_Count > 0 ) & (FALSE_Count == 0)) {reporting_char = 3} #All entires are reported at state level 
-   #          
-   #          
-   #          if(reporting_char == 1)
-   #          {
-   #            #isolate state level entries
-   #            state_level_entry    = state_crop.db[is.na(state_crop.db[,2]),,drop = FALSE]
-   #            
-   #            #Isolate modelled crops
-   #            modelled_entries = state_crop.db[state_crop.db[,5] > 0,,drop = FALSE]
-   #            modelled_entries = modelled_entries[complete.cases(modelled_entries[,1]),,drop = FALSE]
-   #            modelled_entries[,4][is.na(modelled_entries[,4])] <- 0
-   #            
-   #            #Isolate non modelled crops
-   #            #                       non_modelled_entries = state_crop.db[state_crop.db[,8] == 0,]
-   #            #                       non_modelled_entries = non_modelled_entries[complete.cases(non_modelled_entries[,2]),]
-   #            #                       non_modelled_entries[,5][is.na(non_modelled_entries[,5])] <- 0
-   #            
-   #            #deduct all TSI from modelled at State level
-   #            state_level_entry[4] = as.numeric(state_level_entry[4]) - sum(as.numeric(modelled_entries[,4]))
-   #            
-   #            #isolate modelled crops where TSI = 0
-   #            to_distribute_tsi = modelled_entries[modelled_entries[,4] == 0,,drop = FALSE]
-   #            existing_tsi      = modelled_entries[modelled_entries[,4] > 0,,drop = FALSE]
-   #            
-   #            #compute ratio
-   #            ratio_array = as.numeric(to_distribute_tsi[,6])
-   #            for(a in 1:length(ratio_array)) { to_distribute_tsi[a,4] = (ratio_array[a]/sum(ratio_array)) * as.numeric(state_level_entry[4]) }
-   #            
-   #            #combine arrays
-   #            distributed.ui.state_crop.db = rbind(existing_tsi,to_distribute_tsi)
-   #          }
-   #          
-   #          
-   #          if(reporting_char == 2)
-   #          {
-   #            #confirm with premal, that all TSI from non modelled districts get thrown out or not
-   #            #isolate state level entries
-   #            state_level_entry    = state_crop.db[1,,drop = FALSE]
-   #            state_level_entry[4:7] = 0
-   #            
-   #            #Isolate modelled crops
-   #            modelled_entries = state_crop.db[state_crop.db[,5] > 0,,drop = FALSE]
-   #            modelled_entries = modelled_entries[complete.cases(modelled_entries[,1]),,drop = FALSE]
-   #            modelled_entries[,4][is.na(modelled_entries[,4])] <- 0
-   #            
-   #            #Isolate non modelled crops
-   #            non_modelled_entries = state_crop.db[state_crop.db[,5] == 0,,drop = FALSE]
-   #            non_modelled_entries = non_modelled_entries[complete.cases(non_modelled_entries[,1]),,drop = FALSE]
-   #            non_modelled_entries[,4][is.na(non_modelled_entries[,4])] <- 0
-   #            
-   #            #Add all TSI from non-modelled at State level
-   #            if(nrow(non_modelled_entries) > 0){state_level_entry[4] = sum(as.numeric(non_modelled_entries[,4]))}
-   #            
-   #            #isolate modelled crops where TSI = 0
-   #            to_distribute_tsi = modelled_entries[modelled_entries[,4] == 0,,drop = FALSE]
-   #            existing_tsi      = modelled_entries[modelled_entries[,4] > 0,,drop = FALSE]
-   #            
-   #            #compute ratio
-   #            if(state_level_entry[4] > 0)
-   #            {
-   #              ratio_array = as.numeric(to_distribute_tsi[,6])
-   #              for(a in 1:length(ratio_array)) {to_distribute_tsi[a,4] = (ratio_array[a]/sum(ratio_array)) * as.numeric(state_level_entry[4]) }
-   #              
-   #              #combine arrays
-   #              distributed.ui.state_crop.db = rbind(existing_tsi,to_distribute_tsi)
-   #            } 
-   #            
-   #            #                      #combine arrays     
-   #            if(state_level_entry[4] == 0){ distributed.ui.state_crop.db = existing_tsi }
-   #            
-   #          }
-   #          
-   #          
-   #          if(reporting_char == 3)
-   #          {
-   #            #isolate state level entries
-   #            state_level_entry    = state_crop.db[is.na(state_crop.db[,7]),,drop = FALSE]
-   #            
-   #            
-   #            #Isolate modelled crops
-   #            modelled_entries = state_crop.db[state_crop.db[,5] > 0,,drop = FALSE]
-   #            modelled_entries = modelled_entries[complete.cases(modelled_entries[,1]),,drop = FALSE]
-   #            modelled_entries[,4][is.na(modelled_entries[,4])] <- 0
-   #            
-   #            #isolate modelled crops where TSI = 0
-   #            to_distribute_tsi = modelled_entries[modelled_entries[,4] == 0,,drop = FALSE]
-   #            
-   #            #compute ratio
-   #            
-   #            ratio_array = as.numeric(to_distribute_tsi[,6])
-   #            for(a in 1:length(ratio_array)) { to_distribute_tsi[a,4] = (ratio_array[a]/sum(ratio_array)) * state_level_entry[4] }
-   #            
-   #            #combine arrays
-   #            distributed.ui.state_crop.db = to_distribute_tsi
-   #          }
-   #          
-   #          if(db.flag == 1) {deaggregated.UserInput.db = rbind(deaggregated.UserInput.db, distributed.ui.state_crop.db)}
-   #          if(db.flag == 0) {deaggregated.UserInput.db = distributed.ui.state_crop.db; db.flag = 1}
-   #          
-   #        }
-   #      }
-   #      
-   #      
-   #      return(deaggregated.UserInput.db)
-   #      
-   #    }
-   #    #...............................................................................
-   # 
-   
-   #    
-   #    #...............................................................................
-   #    # Disaggregate exposure
-   #    disaggregate_exposure_WBCIS <- function(Exposure.db, UserInput.db)
-   #    {
-   #      
-   #      #   UserInput.db = WBCIS_display_array
-   #      
-   #      #aggregate data at respective admin level to avoid 
-   #      x=UserInput.db[,c(-5,-6)] #remove EPI and PR
-   #      agg_flag = 0
-   #      
-   #      
-   #      CropSeason_levels  = unique(x$CropSeasonID)
-   #      for(i in 1:length(CropSeason_levels))
-   #      {
-   #        cs_id = CropSeason_levels[i]
-   #        cropseason.db = x[x[,3] == cs_id,]
-   #        state_levels     = unique(cropseason.db$State_ID)
-   #        
-   #        for(j in 1:length(state_levels))
-   #        {
-   #          s_id     = state_levels[j]
-   #          state.db = cropseason.db[cropseason.db[,1] == s_id,]
-   #          
-   #          state.db[,2][is.na(state.db[,2])] <- -9999
-   #          District_levels  = unique(state.db$District_ID)
-   #          
-   #          for(k in 1:length(District_levels))
-   #          {
-   #            
-   #            d_id = District_levels[k]
-   #            district.db = state.db[state.db[,2] == d_id,]
-   #            
-   #            sumTSI = sum(as.numeric(district.db[,4]))
-   #            tmp = district.db[1,]
-   #            tmp[,4] = sumTSI
-   #            tmp[tmp == -9999] <- NA
-   #            
-   #            if(agg_flag == 1) {tmp.x = rbind(tmp.x, tmp)}
-   #            if(agg_flag == 0) {tmp.x = tmp; agg_flag = 1}
-   #          }
-   #        }
-   #      }
-   #      
-   #      UserInput.db = tmp.x
-   #      
-   #      #Initiate data
-   #      db.flag = 0
-   #      UI_CropSeasonID  = unique(UserInput.db$CropSeasonID)
-   #      
-   #      for(i in 1:length(UI_CropSeasonID))
-   #      {
-   #        CS_id      = UI_CropSeasonID[i]
-   #        ui.Crop.db <- UserInput.db[UserInput.db[,3] == CS_id,]
-   #        ex.Crop.db <- Exposure.db [Exposure.db [,3] == CS_id,]
-   #        
-   #        UI_StateID = unique(ui.Crop.db$State_ID)
-   #        
-   #        for(j in 1:length(UI_StateID))
-   #        {
-   #          TRUE_Count  = 0;
-   #          FALSE_Count = 0;
-   #          
-   #          st_id            =  UI_StateID[j]
-   #          ui.state_crop.db <- ui.Crop.db[ui.Crop.db[,1] == st_id,]
-   #          ex.state_crop.db <- ex.Crop.db[ex.Crop.db[,2] == st_id,]
-   #          
-   #          #Join Exposure and User input together
-   #          tmp_contract_id  =  ui.Crop.db$Contract_Number[1]
-   #          tmp.db           = merge(ui.state_crop.db, ex.state_crop.db, by='District_ID', all='TRUE')
-   #          
-   #          state_crop.db    = cbind(st_id, tmp.db$District_ID, CS_id, tmp.db$TSI, 
-   #                                   tmp.db[,11], tmp.db$Planted_Area, tmp.db[,9])
-   #                                #  Modelled                         Indemnity
-   #          colnames(state_crop.db) <- c('State_ID', 'District_ID', 'CropSeasonID',  'TSI', 'Modelled', 'Planted_Area', 'Indemnity')
-   #          
-   #          
-   #          #determine if it is reported only at state / state & district / district
-   #          options(warn=-1)
-   #          rm(st_cr_district, district_test, tmp.flag.TRUE, tmp.flag.FALSE, TRUE_count, reporting_char)
-   #          options(warn=0)  
-   #          
-   #          st_cr_district  = ui.state_crop.db$District_ID
-   #          
-   #          district_test   = is.na(st_cr_district)
-   #          district_test   = as.data.frame(table(district_test))
-   #          
-   #          tmp.flag.TRUE   = district_test[district_test[,1] == 'TRUE',]
-   #          tmp.flag.FALSE  = district_test[district_test[,1] == 'FALSE',]
-   #          
-   #          if(nrow(tmp.flag.TRUE) > 0) {TRUE_count  = district_test[district_test[,1] == 'TRUE',] ; TRUE_Count = TRUE_count[1,2]}
-   #          if(nrow(tmp.flag.FALSE) > 0){FALSE_count = district_test[district_test[,1] == 'FALSE',]; FALSE_Count = FALSE_count[1,2]}
-   #          
-   #          # TRUE count refers entries where districts are NOT reported, 
-   #          # False count refers to number entries where districts are reported
-   #          if((TRUE_Count > 0 ) & (FALSE_Count > 0) ) {reporting_char = 1} #Both State level and District level are reported
-   #          if((TRUE_Count == 0) & (FALSE_Count > 0) ) {reporting_char = 2} #All entires are reported at district level
-   #          if((TRUE_Count > 0 ) & (FALSE_Count == 0)) {reporting_char = 3} #All entires are reported at state level 
-   #          
-   #          
-   #          if(reporting_char == 1)
-   #          {
-   #            #isolate state level entries
-   #            state_level_entry    = state_crop.db[is.na(state_crop.db[,2]),,drop = FALSE]
-   #            
-   #            #Isolate modelled crops
-   #            modelled_entries = state_crop.db[state_crop.db[,5] > 0,,drop = FALSE]
-   #            modelled_entries = modelled_entries[complete.cases(modelled_entries[,1]),,drop = FALSE]
-   #            modelled_entries[,4][is.na(modelled_entries[,4])] <- 0
-   #            
-   #            #Isolate non modelled crops
-   #            #                       non_modelled_entries = state_crop.db[state_crop.db[,8] == 0,]
-   #            #                       non_modelled_entries = non_modelled_entries[complete.cases(non_modelled_entries[,2]),]
-   #            #                       non_modelled_entries[,5][is.na(non_modelled_entries[,5])] <- 0
-   #            
-   #            #deduct all TSI from modelled at State level
-   #            state_level_entry[4] = as.numeric(state_level_entry[4]) - sum(as.numeric(modelled_entries[,4]))
-   #            
-   #            #isolate modelled crops where TSI = 0
-   #            to_distribute_tsi = modelled_entries[modelled_entries[,4] == 0,,drop = FALSE]
-   #            existing_tsi      = modelled_entries[modelled_entries[,4] > 0,,drop = FALSE]
-   #            
-   #            #compute ratio
-   #            ratio_array = as.numeric(to_distribute_tsi[,6])
-   #            for(a in 1:length(ratio_array)) { to_distribute_tsi[a,4] = (ratio_array[a]/sum(ratio_array)) * as.numeric(state_level_entry[4]) }
-   #            
-   #            #combine arrays
-   #            distributed.ui.state_crop.db = rbind(existing_tsi,to_distribute_tsi)
-   #          }
-   #          
-   #          
-   #          if(reporting_char == 2)
-   #          {
-   #            #confirm with premal, that all TSI from non modelled districts get thrown out or not
-   #            #isolate state level entries
-   #            state_level_entry    = state_crop.db[1,,drop = FALSE]
-   #            state_level_entry[4:7] = 0
-   #            
-   #            #Isolate modelled crops
-   #            modelled_entries = state_crop.db[state_crop.db[,5] > 0,,drop = FALSE]
-   #            modelled_entries = modelled_entries[complete.cases(modelled_entries[,1]),,drop = FALSE]
-   #            modelled_entries[,4][is.na(modelled_entries[,4])] <- 0
-   #            
-   #            #Isolate non modelled crops
-   #            non_modelled_entries = state_crop.db[state_crop.db[,5] == 0,,drop = FALSE]
-   #            non_modelled_entries = non_modelled_entries[complete.cases(non_modelled_entries[,1]),,drop = FALSE]
-   #            non_modelled_entries[,4][is.na(non_modelled_entries[,4])] <- 0
-   #            
-   #            #Add all TSI from non-modelled at State level
-   #            if(nrow(non_modelled_entries) > 0){state_level_entry[4] = sum(as.numeric(non_modelled_entries[,4]))}
-   #            
-   #            #isolate modelled crops where TSI = 0
-   #            to_distribute_tsi = modelled_entries[modelled_entries[,4] == 0,,drop = FALSE]
-   #            existing_tsi      = modelled_entries[modelled_entries[,4] > 0,,drop = FALSE]
-   #            
-   #            #compute ratio
-   #            if(state_level_entry[4] > 0)
-   #            {
-   #              ratio_array = as.numeric(to_distribute_tsi[,6])
-   #              for(a in 1:length(ratio_array)) {to_distribute_tsi[a,4] = (ratio_array[a]/sum(ratio_array)) * as.numeric(state_level_entry[4]) }
-   #              
-   #              #combine arrays
-   #              distributed.ui.state_crop.db = rbind(existing_tsi,to_distribute_tsi)
-   #            } 
-   #            
-   #            #                      #combine arrays     
-   #            if(state_level_entry[4] == 0){ distributed.ui.state_crop.db = existing_tsi }
-   #            
-   #          }
-   #          
-   #          
-   #          if(reporting_char == 3)
-   #          {
-   #            #isolate state level entries
-   #            state_level_entry    = state_crop.db[is.na(state_crop.db[,7]),,drop = FALSE]
-   #            
-   #            
-   #            #Isolate modelled crops
-   #            modelled_entries = state_crop.db[state_crop.db[,5] > 0,,drop = FALSE]
-   #            modelled_entries = modelled_entries[complete.cases(modelled_entries[,1]),,drop = FALSE]
-   #            modelled_entries[,4][is.na(modelled_entries[,4])] <- 0
-   #            
-   #            #isolate modelled crops where TSI = 0
-   #            to_distribute_tsi = modelled_entries[modelled_entries[,4] == 0,,drop = FALSE]
-   #            
-   #            #compute ratio
-   #            
-   #            ratio_array = as.numeric(to_distribute_tsi[,6])
-   #            for(a in 1:length(ratio_array)) { to_distribute_tsi[a,4] = (ratio_array[a]/sum(ratio_array)) * state_level_entry[4] }
-   #            
-   #            #combine arrays
-   #            distributed.ui.state_crop.db = to_distribute_tsi
-   #          }
-   #          
-   #          if(db.flag == 1) {deaggregated.UserInput.db = rbind(deaggregated.UserInput.db, distributed.ui.state_crop.db)}
-   #          if(db.flag == 0) {deaggregated.UserInput.db = distributed.ui.state_crop.db; db.flag = 1}
-   #          
-   #        }
-   #      }
-   #      
-   #      
-   #      return(deaggregated.UserInput.db)
-   #      
-   #    }
-   #    #...............................................................................
-   # 
-   
-   
-#  #...............................................................................
-#  # Compute Aggregation
-#  Compute_Crop_State_aggregate <- function(GY.db, Product_type.db, adminID.db)
-#  {
-#    
-#    gy.db     <- IND_LOSS_Historic_gy.db  #Historic_State_crop_year_aggregated.db
-#    
-#    # Attach Crop Names to the array
-#    CropNames        =  as.data.frame(unique(Product_type.db[,c(-1,-3,-6)]))
-#    cropdb           <- unique(cbind(as.character(CropNames[,1]), 
-#                                     as.numeric(as.character(CropNames[,2])), 
-#                                     as.numeric(as.character(CropNames[,3]))))
-#    colnames(cropdb) <- c('CropName', 'CropSeasonID','CropID')
-#    gy.db            =  merge(gy.db, cropdb, by=c('CropSeasonID'))
-#    
-#    
-#    # Attach State Names to the Array
-#    adminID.db       =  unique(adminID.db[,c(-1,-3,-5)])
-#    gy.db            =  merge(gy.db, adminID.db, by=c('State_ID'))
-#    
-#    # Prepare Array                
-#    gy.db            =  cbind(gy.db[,16], gy.db[,14], gy.db[,2:13])
-#    colnames(gy.db) <- c('State_Name','Crop_Name','CropSeasonID','District_ID',
-#                         'TSI','Modelled','Planted_Area','Indemnity','Year',
-#                         'Yield','Guaranteed_GY','Threshold_GY','Shortfall_GY',
-#                         'Indemnity_loss')
-#    
-#    
-#    
-#    # Create Array
-#    StateNameID  =  unique(as.character(gy.db$State_Name))
-#    CropNameID   =  unique(as.character(gy.db$Crop_Name))
-#    output_array <- array(, dim=c(length(StateNameID),length(CropNameID)))
-#    
-#    db.flag        = 0
-#    
-#    for(i in 1:length(StateNameID))
-#    {
-#      ST_ID    =  toString(StateNameID[i])
-#      State.db <- gy.db[gy.db[,1] == ST_ID,]
-#      
-#      
-#      for(j in 1:length(CropNameID))
-#      {
-#        CS_ID   = toString(CropNameID[j])
-#        Crop.db = State.db[State.db[,2] == CS_ID,]
-#        
-#        if(nrow(Crop.db) > 0)
-#        {
-#          Total_TSI          = sum(Crop.db$Total_TSI)
-#          Total_Planted_Area = sum(Crop.db$Total_Planted_Area)
-#          Avg_Indemnity      = mean(Crop.db$Indemnity)
-#          Avg_Actual_GY      = mean(Crop.db$Yield)
-#          Avg_Guaranteed_GY  = mean(Crop.db$Guaranteed_GY)
-#          Avg_Threshold_GY   = mean(Crop.db$Threshold_GY)
-#          Avg_Shortfall_GY   = mean(Crop.db$Shortfall_GY > 0)
-#          #                               N                  = nrow(Crop.db)
-#          #                               Loss_Sum           = sum(Crop.db$Indemnity_loss)
-#          #                               Burning_cost       = Loss_Sum/N
-#          
-#          
-#        }
-#        
-#      }
-#    }
-#    #                       
-#    
-#    #                             CR_ID   =  CropNameID[j]
-#    #                             Crop.db <- State.db[State.db[,2] == CR_ID,]
-#    #                             
-#    #                             if(nrow(Crop.db) > 0)
-#    #                             {
-#    #                               Total_TSI          = sum(Crop.db$Total_TSI)
-#    #                               Total_Planted_Area = sum(Crop.db$Total_Planted_Area)
-#    #                               Avg_Indemnity      = mean(Crop.db$Indemnity)
-#    #                               Avg_Actual_GY      = mean(Crop.db$Yield)
-#    #                               Avg_Guaranteed_GY  = mean(Crop.db$Guaranteed_GY)
-#    #                               Avg_Threshold_GY   = mean(Crop.db$Threshold_GY)
-#    #                               Avg_Shortfall_GY   = mean(Crop.db$Shortfall_GY > 0)
-#    #                               N                  = nrow(Crop.db)
-#    #                               Loss_Sum           = sum(Crop.db$Indemnity_loss)
-#    #                               Burning_cost       = Loss_Sum/N
-#    #                               tmp.gy.db          = cbind(ST_ID, CR_ID, YR_ID, Total_TSI, Total_Planted_Area, Avg_Indemnity,
-#    #                                                          Avg_Actual_GY, Avg_Guaranteed_GY, Avg_Threshold_GY, Avg_Shortfall_GY,
-#    #                                                          N, LossN, Loss_Sum, Loss_min, Loss_max, Burning_cost)
-#    #                               
-#    #                               if(db.flag == 1) {tmp.gy.final.db = rbind(tmp.gy.final.db, tmp.gy.db)}
-#    #                               if(db.flag == 0) {tmp.gy.final.db = tmp.gy.db; db.flag = 1}
-#    #                             }
-#    #                          }
-#    #                       }
-#    # 
-#    # 
-#    # 
-#    # 
-#    #                   
-#    # 
-#    #                 }
-#    #                 
-#    # 
-#    #                colnames(tmp.gy.final.db) <- c('State_ID','CropID','Year', 'Total_TSI','Total_Planted_Area','Avg_Indemnity','Avg_Actual_GY','Avg_Guaranteed_GY',
-#    #                                               'Avg_Threshold_GY','Avg_Shortfall_GY','N', 'LossN', 'Loss_Sum', 'Loss_min', 'Loss_max', 'Burning_cost')
-#    # 
-#    #                return(tmp.gy.final.db)
-#  }
-#  #...............................................................................
-#  
-#  
-#  
-#  
-#  
-#  
-# #  
-# # 
-#  
-#  #...............................................................................
-#  # Check all CSV user input for valid and invalid entires
-#  Check_UserInput <- function(UserInput.db,adminID.db,Exposure.db,Product_type.db)
-#  {      
-#    #...............................................................................
-#    # FUNCTION DATA_AUDIT
-#    # Create function to check User Contract for any errors
-#    # INPUT:  AdminID.db, ProductID.db, SeasonID.db, MNAIS_Terms.db, UserInput.db
-#    # Output: Acccepted_UserInput.db
-#    #...............................................................................
-#    #
-#    #  a) check if all  State_ID & District_ID are valid.
-#    #  b) Check if all Crop_ID's and Season_ID's are valid.
-#    #  c) Check if District_ID's, Crop_ID's and Season_ID's are valid as per the MNAIS Term database.
-#    #  d) Check if all reported entries are modelled crops per district and season (Check with TOM)
-#    #  c) Check if [TSI] or [EPI and Premium rate] are provided
-#    #  d) If all 3 (TSI, EPI & Premium rate) are provided, then check if  EPI/ Premium Rate = approximate(TSI) (decide threshold for "approximate". suggested values could be with 0.5% of the difference)
-#    #  e) check if premium rate > 1
-#    #  f) If EPI & TSI are provided check if EPI >= TSI
-#    #  g) Identify entries where TSI is not reported, and compute TSI (FORMULA: EPI / Premium rate = TSI)
-#    #  h) Input data audit
-#    #      h-a) report all accepted and rejected entries as a summary table (csv) by STATE, LOB, SEASON, TSI and EPI
-#    #      h-b) Dump all unaccepted entries in a csv "data dump")
-#    #  * removeblank lines
-#    #
-#    #  NOTE: AdminID, Exposure and Product_type will be assumed to be clean
-#    #..........................................................................................................
-#    
-#    #UserInput.db    = as.matrix(raw_input)
-#    UserInput.db    = raw_input
-#    #UserInput.db    = as.matrix(UserInput.db)
-#    #adminID.db      = as.matrix(adminID.db)
-#    #Exposure.db     = as.numeric(Exposure.db)
-#    #Product_type.db = as.matrix(Product_type.db)
-#    
-#    
-#    rowL            = nrow(UserInput.db)
-#    `%ni%`          <-Negate(`%in%`)
-#    
-#    
-#    UI_StateID      = unique(UserInput.db[,2])
-#    UI_DistrictID   = unique(UserInput.db[,3])
-#    UI_CropSeasonID = unique(UserInput.db[,4])
-#    UI_TSI          = unique(UserInput.db[,5])
-#    UI_EPI          = unique(UserInput.db[,6])
-#    UI_Premium_rate = unique(UserInput.db[,7])
-#    
-#    
-#    
-#    #..........................................................................................................
-#    #  a) check if all  State_ID & District_ID are valid.
-#    #  b) Check if all Crop_ID's and Season_ID's are valid.
-#    Admin_StateID          =   as.numeric(as.character((unique(adminID.db[,4]))))
-#    Admin_DistrictID       =   as.numeric(as.character((unique(adminID.db[,5]))))
-#    Prod_CropSeasonID      =   as.numeric(as.character((unique(Product_type.db[,4]))))
-#    
-#    StateID_mismatch       <-  UserInput.db[UserInput.db[,2] %ni% Admin_StateID,]
-#    UserInput.db           <-  UserInput.db[UserInput.db[,2] %in% Admin_StateID,]
-#    
-#    DistrictID_mismatch    <-  as.data.frame(UserInput.db[UserInput.db[,3] %ni% Admin_DistrictID,])
-#    UserInput.db           <-  UserInput.db[UserInput.db[,3] %in% Admin_DistrictID,]
-#    
-#    Crop_SeasonID_mismatch <-  as.data.frame(UserInput.db[UserInput.db[,4] %ni% Prod_CropSeasonID,])
-#    UserInput.db           <-  UserInput.db[UserInput.db[,4] %in% Prod_CropSeasonID,]
-#    
-#    
-#    # store all mismatches
-#    Column_names_output <- c('Contract_Number','State_ID','District_ID','CropSeasonID','TSI','EPI','Premium_rate','Check_Output') 
-#    
-#    if(nrow(StateID_mismatch)      > 0) {StateID_mismatch       <- cbind(StateID_mismatch,       'State mismatch');      colnames(StateID_mismatch)       <- Column_names_output} 
-#    
-#    if(nrow(DistrictID_mismatch)   > 0) {DistrictID_mismatch    <- cbind(DistrictID_mismatch,    'District mismatch');   colnames(DistrictID_mismatch)    <- Column_names_output}
-#    
-#    if(nrow(Crop_SeasonID_mismatch)> 0) {Crop_SeasonID_mismatch <- cbind(Crop_SeasonID_mismatch, 'CropSeason mismatch'); colnames(Crop_SeasonID_mismatch) <- Column_names_output}
-#    
-#    # get a clean set of UI parameters
-#    UI_StateID      = unique(UserInput.db[,2])
-#    UI_DistrictID   = unique(UserInput.db[,3])
-#    UI_CropSeasonID = unique(UserInput.db[,4])
-#    UI_TSI          = unique(UserInput.db[,5])
-#    UI_EPI          = unique(UserInput.db[,6])
-#    UI_Premium_rate = unique(UserInput.db[,7])
-#    #..........................................................................................................
-#    
-#    
-#    #..........................................................................................................
-#    #  c) Check if District_ID's, Crop_ID's and Season_ID's are valid as per the MNAIS Term database.
-#    #  d) Check if all reported entries are modelled crops per district and season (Check with TOM)
-#    Exposure.db              = Exposure.db[Exposure.db[,5] == 1,] #Is_MNAIS_Modeled
-#    modelled.ui.flag         = 0
-#    modelled.mismatch.d.flag = 0
-#    modelled.mismatch.s.flag = 0
-#    
-#    for(i in 1:length(UI_CropSeasonID))
-#    {
-#      # Isolate User contracts and exposure db by crop types
-#      CS_id = UI_CropSeasonID[i]
-#      tmp.crop.exposure          =   Exposure.db [Exposure.db[,3]  == CS_id,]  #Crop exposure
-#      tmp.crop.UserInput.db      =   UserInput.db[UserInput.db[,4] == CS_id,]  #Crop user input
-#      Admin_StateID              =   tmp.crop.exposure$State_ID  #States present in exposure db for a crop type 
-#      Admin_DistrictID           =   as.character(tmp.crop.exposure$District_ID)             #Districts present in exposure db for a crop type 
-#      Admin_DistrictID           =   c(Admin_DistrictID, NA)
-#      
-#      
-#      # Find modelled state id's
-#      #               CropStateID                =   as.numeric(as.character(unique(tmp.crop.exposure$State_ID))))
-#      #               CropStateID = as.data.frame(CropStateID)
-#      
-#      tmp.Crop.State.mismatch    <-  tmp.crop.UserInput.db[tmp.crop.UserInput.db[,2] %ni% Admin_StateID,]
-#      crop.UserInput.db          <-  tmp.crop.UserInput.db[tmp.crop.UserInput.db[,2] %in% Admin_StateID,]
-#      
-#      if(modelled.mismatch.s.flag == 1) {Crop.State.mismatch = rbind(Crop.State.mismatch, tmp.Crop.State.mismatch)}
-#      if(modelled.mismatch.s.flag == 0) {Crop.State.mismatch = tmp.Crop.State.mismatch; modelled.mismatch.s.flag = 1}
-#      
-#      
-#      # Find modelled District id's
-#      CropDistrictID              =   unique(tmp.crop.exposure$Admin_DistrictID)
-#      tmp.Crop.District.mismatch  <-  crop.UserInput.db[crop.UserInput.db[,3] %ni% Admin_DistrictID,]
-#      crop.UserInput.db           <-  crop.UserInput.db[crop.UserInput.db[,3] %in% Admin_DistrictID,]
-#      
-#      #             if(modelled.ui.flag == 1)       {tmp.UserInput.db = rbind(tmp.UserInput.db, crop.UserInput.db)}
-#      #             if(modelled.ui.flag == 0)       {tmp.UserInput.db = crop.UserInput.db; modelled.ui.flag = 1}
-#      
-#      if(modelled.mismatch.d.flag == 1) {Crop.District.mismatch = rbind(Crop.District.mismatch, tmp.Crop.District.mismatch)}
-#      if(modelled.mismatch.d.flag == 0) {Crop.District.mismatch = tmp.Crop.District.mismatch; modelled.mismatch.d.flag = 1}
-#      
-#      if(modelled.ui.flag == 1)       {tmp.UserInput.db = rbind(tmp.UserInput.db, crop.UserInput.db)}
-#      if(modelled.ui.flag == 0)       {tmp.UserInput.db = crop.UserInput.db; modelled.ui.flag = 1}
-#    }
-#    
-#    
-#    UserInput.db = tmp.UserInput.db
-#    
-#    if(nrow(Crop.State.mismatch) > 0) {Crop.State.mismatch <- cbind(Crop.State.mismatch, 'Crop by State not modelled'); 
-#                                       colnames(Crop.State.mismatch) <- Column_names_output}
-#    
-#    if(nrow(Crop.District.mismatch) > 0) {Crop.District.mismatch <- cbind(Crop.District.mismatch, 'Crop by District not modelled'); 
-#                                          colnames(Crop.District.mismatch) <- Column_names_output}
-#    #..........................................................................................................
-#    
-#    
-#    
-#    #..........................................................................................................
-#    #  c) Check if [TSI] or [EPI and Premium rate] are provided
-#    #  d) If all 3 (TSI, EPI & Premium rate) are provided, then check if  EPI/ Premium Rate = approximate(TSI) (decide threshold for "approximate". suggested values could be with 0.5% of the difference)
-#    #  e) check if premium rate > 1 or less than 0
-#    #  f) If EPI & TSI are provided check if EPI >= TSI
-#    #  g) Identify entries where TSI is not reported, and compute TSI (FORMULA: EPI / Premium rate = TSI)
-#    
-#    check_array <- array('Good', dim=c(nrow(UserInput.db),1))
-#    
-#    if (nrow(UserInput.db) > 0)
-#    { 
-#      for(i in 1:nrow(UserInput.db))
-#      {
-#        TSI      = UserInput.db[i,5]
-#        EPI      = UserInput.db[i,6]
-#        PR       = UserInput.db[i,7]
-#        TSI_flag = 1
-#        EPI_flag = 1
-#        PR_flag  = 1
-#        
-#        #                  if (!is.na(TSI)==0) {TSI <- NA}
-#        #                  if (!is.na(EPI)==0) {EPI <- NA}
-#        #                  if (!is.na(PR) ==0) {PR  <- NA}
-#        #
-#        if(is.na(TSI)){TSI_flag = 0}
-#        if(is.na(EPI)){EPI_flag = 0}
-#        if(is.na(PR)) {PR_flag  = 0}
-#        
-#        Not_Blank = TSI_flag + EPI_flag + PR_flag 
-#        if(Not_Blank == 0) {check_array[i] = 'TSI / EPI & Premium not reported'}
-#        
-#        EPI_PR = EPI_flag + PR_flag
-#        if((TSI_flag == 0) && (EPI_PR == 1)){check_array[i] = 'Insufficient TSI Computation Parameters'}
-#        
-#        
-#        if(PR_flag == 1) {if (as.numeric(PR) > 1) {check_array[i] = 'Premium rate greater than 100%'}}
-#        if(PR_flag == 1) {if (as.numeric(PR) < 0) {check_array[i] = 'Premium rate less than 0%'}}
-#        
-#        if((EPI_flag == 1) && (TSI_flag == 1)) {if (EPI >= TSI) {check_array[i] = 'Premium Income greater Total Sum Insured'}}
-#        
-#        
-#        if((EPI_flag == 1) && (TSI_flag == 1) && (PR_flag == 1))
-#        {
-#          tmp.tsi = as.numeric(EPI) / as.numeric(PR)
-#          diff.tsi = as.numeric(TSI) - tmp.tsi
-#          ratio.diff = diff.tsi/as.numeric(TSI)
-#          
-#          if(ratio.diff > 0.05) {check_array[i] = 'Difference between computed TSI (EPI * Premium Rate) and reported TSI greater than 5%'}
-#        } 
-#        
-#        if((EPI_flag == 1) && (TSI_flag == 0) && (PR_flag == 1))
-#        {
-#          tmp.tsi = as.numeric(EPI) / as.numeric(PR)
-#          UserInput.db[i,5] = as.numeric(tmp.tsi)
-#        }
-#        
-#      }
-#    }
-#    
-#    if(nrow(UserInput.db) > 0) {UserInput.db <- cbind(UserInput.db, check_array); 
-#                                colnames(UserInput.db) <- Column_names_output}
-#    #..........................................................................................................
-#    
-#    
-#    
-#    
-#    
-#    
-#    
-#    #..........................................................................................................
-#    # combine all array's
-#    
-#    final_checked_userinput.db <- rbind(StateID_mismatch,
-#                                        DistrictID_mismatch,
-#                                        Crop_SeasonID_mismatch,
-#                                        Crop.State.mismatch,
-#                                        Crop.District.mismatch,
-#                                        UserInput.db)
-#    
-#    return(final_checked_userinput.db)
-#    #..........................................................................................................
-#    
-#  }
-#  #...............................................................................
-#  
-#  
-   
-   
-   
-   
-   
-   
-#    
-#    
-#    
-#    #...............................................................................
-#    Check_SingleEntry_UserInput <- function(UserInput.db,adminID.db,Exposure.db,Product_type.db)   
-#    {
-#      rowL = nrow(UserInput.db)
-#      `%ni%` <- Negate(`%in%`)
-#      
-#      check_array <- 'Good'
-#      
-#      #..........................................................................................................
-#      #  a) check if all  State_ID & District_ID are valid.
-#      #  b) Check if all Crop_ID's and Season_ID's are valid.
-#      Admin_StateID       = unique(adminID.db$State_Name)
-#      Admin_DistrictID    = unique(adminID.db$District_Name)
-#      Prod_CropID         = unique(Product_type.db$ProductType)
-#      Prod_SeasonID       = unique(Product_type.db$SeasonType)
-#      #Prod_CropID         = lapply(Prod_CropID, as.character)  ; print(Prod_CropID)
-#      
-#      State_UI            = lapply(UserInput.db[2], as.character)
-#      District_UI         = lapply(UserInput.db[3], as.character)
-#      Crop_UI             = lapply(UserInput.db[4], as.character)
-#      Season_UI           = lapply(UserInput.db[5], as.character)
-#      
-#      state_check         <- State_UI  %in% Admin_StateID
-#      crop_check          <- Crop_UI   %in% Prod_CropID
-#      season_check        <- Season_UI %in% Prod_SeasonID
-#      if(!is.na(District_UI)){district_check <- District_UI %in% Admin_DistrictID}
-#      
-#      
-#      if(state_check      == 'FALSE'){check_array <- 'State mismatch'}
-#      if(crop_check       == 'FALSE'){check_array <- 'Crop mismatch'}
-#      if(season_check     == 'FALSE'){check_array <- 'Season mismatch'}
-#      if(!is.na(District_UI))        {if(district_check == 'FALSE'){check_array <- 'District mismatch'}}
-#      #..........................................................................................................
-#      
-#      #..........................................................................................................
-#      #  c) Check if District_ID's, Crop_ID's and Season_ID's are valid as per the MNAIS Term database.
-#      #  d) Check if all reported entries are modelled crops per district and season (Check with TOM)
-#      state_id      = lapply(UserInput.db[2], as.character)
-#      state_name    = adminID.db[adminID.db[,2] == state_id,]
-#      state_name    = unique(state_name[,c(-1,-3,-5)])
-#      
-#      if(!is.na(District_UI))
-#      {
-#        district_id   = lapply(UserInput.db[3], as.character)
-#        district_name = adminID.db[adminID.db[,3] == district_id,]
-#        district_name = unique(district_name[,c(-1,-2,-4)])
-#      }
-#      
-#      crop_id       = lapply(UserInput.db[4], as.character)
-#      crop_name     = Product_type.db[Product_type.db[,2] == crop_id,]
-#      crop_name     = crop_name[,c(-1)] 
-#      
-#      
-#      season_id     = lapply(UserInput.db[5], as.character)
-#      season_name   = crop_name[crop_name[,2] == season_id,]
-#      season_name   = unique(season_name[,c(-1,-2)])
-#      CS_id         = as.numeric(season_name[1])
-#      
-#      
-#      
-#      Exposure.db   = Exposure.db[Exposure.db[,5] == 1,] #get all modelled crop
-#      Exposure.db   = Exposure.db[Exposure.db[,2] == state_name$State_ID,]; #Get state exposure with crops modelled
-#      look.db       = Exposure.db[Exposure.db[,3] == CS_id,]
-#      
-#      if(nrow(look.db) == 0){check_array = "Crop by State not modelled"}
-#      
-#      if(!is.na(District_UI))
-#      {
-#        look.db = look.db[look.db[,1]  == district_name$District_ID,]
-#        look.db       = look.db[look.db[,3]  == season_name,] #get all state entries where crop season is modelled
-#        
-#        if((nrow(look.db) == 0) && (check_array != "Crop by State not modelled")){check_array = "Crop by District not modelled"}
-#      }
-#      #..........................................................................................................  
-#      
-#      
-#      # #..........................................................................................................
-#      # #  c) Check if [TSI] or [EPI and Premium rate] are provided
-#      # #  d) If all 3 (TSI, EPI & Premium rate) are provided, then check if  EPI/ Premium Rate = approximate(TSI) (decide threshold for "approximate". suggested values could be with 0.5% of the difference)
-#      # #  e) check if premium rate > 1
-#      # #  f) If EPI & TSI are provided check if EPI >= TSI
-#      # #  g) Identify entries where TSI is not reported, and compute TSI (FORMULA: EPI / Premium rate = TSI)
-#      
-#      
-#      TSI      = as.numeric(UserInput.db[6])
-#      EPI      = as.numeric(UserInput.db[7])
-#      PR       = as.numeric(UserInput.db[8])
-#      TSI_flag = 1
-#      EPI_flag = 1
-#      PR_flag  = 1
-#      
-#      
-#      
-#      
-#      
-#      if (TSI==0) {TSI_flag = 0};# if(is.na(TSI)) {TSI_flag = 0}
-#      if (EPI==0) {EPI_flag = 0};# if(is.na(EPI)) {EPI_flag = 0}
-#      if (PR==0) {PR_flag  = 0}; # if(is.na(PR))  {PR_flag = 0}
-#      
-#      if(PR_flag == 1){PR = as.numeric(PR)/100}
-#      
-#      Not_Blank = TSI_flag + EPI_flag + PR_flag 
-#      if(Not_Blank == 0) {check_array = 'TSI / EPI & Premium not reported'}
-#      
-#      EPI_PR = EPI_flag + PR_flag;
-#      if((TSI_flag == 0) && (EPI_PR == 1)){check_array = 'Insufficient TSI Computation Parameters'}
-#      
-#      
-#      if(PR_flag == 1) {if (PR > 1) {check_array = 'Premium rate greater than 100%'}}
-#      if(PR_flag == 1) {if (PR < 0) {check_array = 'Premium rate less than 0%'}}
-#      
-#      if((EPI_flag == 1) && (TSI_flag == 1)){if(EPI >= TSI){check_array = 'Premium Income greater Total Sum Insured'}}
-#      
-#      
-#      if((Not_Blank == 3))
-#      {
-#        tmp.tsi = as.numeric(EPI) / as.numeric(PR)
-#        diff.tsi = as.numeric(TSI) - tmp.tsi
-#        ratio.diff = diff.tsi/as.numeric(TSI)
-#        
-#        if(ratio.diff > 0.05) {check_array = 'Difference between computed TSI (EPI * Premium Rate) and reported TSI greater than 5%'}
-#      }
-#      if((EPI_flag == 1) && (TSI_flag == 0) && (PR_flag == 1))
-#      {
-#        tmp.tsi = as.numeric(EPI) / as.numeric(PR)
-#        UserInput.db[6] = as.numeric(tmp.tsi)
-#      }
-#      
-#      UserInput.db <- array(UserInput.db, dim=c(1,length(UserInput.db)))  
-#      if(length(UserInput.db) > 0) {UserInput.db <- cbind(UserInput.db, check_array)}
-#      colnames(UserInput.db) <- c('Contract_Number','State','District','Crop','Season','TSI','EPI','Premium_rate','Check_Output')
-#      #print(UserInput.db)
-#      return(UserInput.db)
-#    }
-#    #...............................................................................
-#    
-   
-   
-#    
-#    
-#    #...............................................................................
-#    # Convert parameter ID's to names for display purposes
-#    Get_Display_UserInput <- function(UserInput.db, adminID.db, Product_type.db)  
-#    {
-#      `%ni%` <- Negate(`%in%`)
-#      Season <- array(, dim=c(nrow(UserInput.db),1))
-#      display.UserInput.db = cbind(UserInput.db[,1:4], Season, UserInput.db[,5:8])
-#      colnames(display.UserInput.db) <- c('Contract_Number',
-#                                          'State',
-#                                          'District',
-#                                          'Crop',
-#                                          'Season',
-#                                          'TSI',
-#                                          'EPI',
-#                                          'Premium_rate',
-#                                          'Check_Output')
-#      
-#      for(i in 1:nrow(UserInput.db))
-#      {
-#        StateID      = UserInput.db[i,2]
-#        DistrictID   = UserInput.db[i,3]
-#        CropSeasonID = UserInput.db[i,4]
-#        
-#        tmp.state    = adminID.db[adminID.db[,4] %in% StateID,]
-#        tmp.state    = unique(tmp.state[,c(-1,-3,-5)])
-#        
-#        tmp.district = adminID.db[adminID.db[,5] %in% DistrictID,]
-#        tmp.district = unique(tmp.district[,c(-1,-2,-4)])
-#        
-#        tmp.CSID     = Product_type.db[as.numeric(as.character(Product_type.db[,4])) %in% CropSeasonID,]
-#        tmp.CSID     = unique(tmp.CSID[,-1])
-#        
-#        if(nrow(tmp.state) > 0)   {display.UserInput.db[i,2] = lapply(tmp.state[1]   , as.character)}
-#        if(nrow(tmp.district) > 0){display.UserInput.db[i,3] = lapply(tmp.district[1], as.character)}
-#        if(nrow(tmp.CSID) > 0)    {display.UserInput.db[i,4] = lapply(tmp.CSID[1]    , as.character)}
-#        if(nrow(tmp.CSID) > 0)    {display.UserInput.db[i,5] = lapply(tmp.CSID[2]    , as.character)}
-#      }
-#      return(display.UserInput.db)
-#    }
-#    #...............................................................................
-#    
-#    
-#    

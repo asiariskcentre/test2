@@ -9,11 +9,11 @@ source('global.R')
 library(leafletR)
 library(rMaps)
 
-
+Sys.setlocale(locale="English")
 
 #...............................................................................
 # Load databases
-  DB_Message=paste('Libraries loaded - ', Sys.time()); print(DB_Message)
+  #DB_Message=paste('Libraries loaded - ', Sys.time()); print(DB_Message)
   CropSeasons     <-  readRDS('data/CropSeasons.Rds')
   Product_type.db <<- get_Product_type_db(CropSeasons)
 
@@ -25,14 +25,13 @@ library(rMaps)
   Crops           <-  readRDS('data/Crops.Rds')
   Exposure.db     <<- get_exposure_db(Risk_Items, Crops, adminID.db)
 
-  raw_WBCIS       <- readRDS('data/Risk_Items_YearWise_LossCosts.Rds')
+  raw_WBCIS       <-  readRDS('data/Risk_Items_YearWise_LossCosts.Rds')
   raw_historic    <-  readRDS('data/Risk_Items_YearWise_Historical_Yields.Rds')
   raw_synthetic   <-  readRDS('data/Risk_Items_YearWise_Synthetic_Yields.Rds')
   WBCIS_gy.db     <<- get_gy_db(raw_WBCIS,  Risk_Items, adminID.db)
   Historic_gy.db  <<- get_gy_db(raw_historic,  Risk_Items, adminID.db)
   Synthetic_gy.db <<- get_gy_db(raw_synthetic, Risk_Items, adminID.db)
   
-  DB_Message=paste('All Databases loaded - ', Sys.time()); print(DB_Message)
   rm(CropSeasons, Districts, States, Risk_Items, Crops, raw_historic, raw_synthetic)
 #...............................................................................
 
@@ -40,7 +39,7 @@ library(rMaps)
 display.flag <<- 0
 
 # Define server logic required to draw a histogram
-shinyServer(function(input, output) {
+  shinyServer(function(input, output) {
 
           #------------------------------------------------------------------------
           # read in a file and store in display array
@@ -55,7 +54,7 @@ shinyServer(function(input, output) {
                      # Get and check user input file
                        raw_input  <<- read.csv(inFile$datapath, header = T, sep = ',', quote = input$quote)  # No dependency on input$dataset
                        Checked_raw_input <- Check_UserInput(raw_input, adminID.db, Exposure.db, Product_type.db)
-                       Message=paste('Validated User Input ...........', Sys.time()); print(Message)
+                       #Message=paste('Validated User Input ...........', Sys.time()); print(Message)
                      #-------------------------------------------------------------------------------------------------
                      # prepare data for UI Display
                        file_input <- data.frame(lapply(Checked_raw_input, as.character), stringsAsFactors=FALSE)
@@ -78,7 +77,7 @@ shinyServer(function(input, output) {
                             MNAISdata_audit_display_array <<- cbind(State, format(MNAISdata_audit_array, scientific=FALSE))
                             output$MNAISDataAudit <- renderDataTable({return(MNAISdata_audit_display_array)}, options = list(orderClasses = TRUE))
                             x_flag = 1
-                            Message=paste('MNAIS Data Audit computed ....', Sys.time()); print(Message)
+                            #Message=paste('MNAIS Data Audit computed ....', Sys.time()); print(Message)
                            }
 
                        # perform WBCIS data audit and display in to the UI
@@ -92,7 +91,7 @@ shinyServer(function(input, output) {
                             WBCISdata_audit_display_array <<- cbind(State, format(WBCISdata_audit_array, scientific=FALSE))
                             output$WBCISDataAudit <- renderDataTable({return(WBCISdata_audit_display_array)}, options = list(orderClasses = TRUE))
                             y_flag = 1
-                            Message=paste('WBCIS Data Audit computed ....', Sys.time()); print(Message)
+                            #Message=paste('WBCIS Data Audit computed ....', Sys.time()); print(Message)
                            }
                      
                          if((x_flag == 1) && (y_flag == 0)){output$Data_Audit_LOB_Pie   <- renderPlot({LOB_Pie_Plot_1(MNAISdata_audit_array, "MNAIS Line of Business")})}
@@ -274,19 +273,19 @@ shinyServer(function(input, output) {
                                 MNAIS_display_array[MNAIS_display_array[,8]=='Crop by District not modelled',8] <- 'Good'
                                 MNAIS_display_array[MNAIS_display_array[,8]=='District mismatch',8] <- 'Good'
                                 MNAIS_display_array = as.data.frame(MNAIS_display_array[MNAIS_display_array[,8] == 'Good',])
-                                Message=paste('MNAIS Dissaggregation filter successful ....', Sys.time()); print(Message)
+                                #Message=paste('MNAIS Dissaggregation filter successful ....', Sys.time()); print(Message)
                               
                               
                              if(nrow(MNAIS_display_array) > 0)
                                  { 
                                      MNAIS_display_array = Convert_Par_to_ID(MNAIS_display_array, adminID.db, Product_type.db)
-                                     Message=paste('MNAIS Parameter to ID Conversion successful ....', Sys.time()); print(Message)
+                                     #Message=paste('MNAIS Parameter to ID Conversion successful ....', Sys.time()); print(Message)
                                      
                                  #...............................................................................
                                  # ASSUMPTION USER INPUT DOES NOT CONTAIN ANY UNMODELLED DISTRICTS ANY MORE
                                    MNAIS_Exposure.db                            <-  get_mutually_exclusive_exposure(MNAIS_display_array, Exposure.db) # get mutually exclusive modelled states
                                    MNAIS_Dissaggregated_exposure.db             <-  disaggregate_exposure(MNAIS_Exposure.db, MNAIS_display_array)
-                                   Message=paste('MNAIS Dissaggregation successful ....', Sys.time()); print(Message)
+                                   #Message=paste('MNAIS Dissaggregation successful ....', Sys.time()); print(Message)
                                    MNAIS_Dissaggregated_exposure.db             <<- as.data.frame(MNAIS_Dissaggregated_exposure.db)
                                    MNAIS_Display_Dissaggregated_exposure.db     <<- Convert_ID_to_Par_Dissagregate(MNAIS_Dissaggregated_exposure.db, adminID.db, Product_type.db) 
                                    MNAIS_Display_Dissaggregated_exposure.db     =   MNAIS_Display_Dissaggregated_exposure.db[,c(-6)] #remove 'is modelled' tab
@@ -309,18 +308,18 @@ shinyServer(function(input, output) {
                               WBCIS_display_array = WBCIS_display_array[WBCIS_display_array[,8] == 'Good',]
 
                               WBCIS_display_array[WBCIS_display_array=='All'] = NA
-                              Message=paste('WBCIS Dissaggregation filter successful ....', Sys.time()); print(Message)
+                              #Message=paste('WBCIS Dissaggregation filter successful ....', Sys.time()); print(Message)
                               
                              if(nrow(WBCIS_display_array) > 0)
                                 {
                                   WBCIS_display_array = Convert_Par_to_ID(WBCIS_display_array, adminID.db, Product_type.db)
-                                  Message=paste('WBCIS Parameter to ID Conversion successful ....', Sys.time()); print(Message)
+                                  #Message=paste('WBCIS Parameter to ID Conversion successful ....', Sys.time()); print(Message)
                                   
 #                               #...............................................................................
 #                               # ASSUMPTION USER INPUT DOES NOT CONTAIN ANY UNMODELLED DISTRICTS ANY MORE
                                   WBCIS_Exposure.db                            <- get_mutually_exclusive_exposure(WBCIS_display_array, Exposure.db)
                                   WBCIS_Dissaggregated_exposure.db             <-  disaggregate_exposure_WBCIS(WBCIS_Exposure.db, WBCIS_display_array)
-                                  Message=paste('WBCIS Dissaggregation successful ....', Sys.time()); print(Message)
+                                  #Message=paste('WBCIS Dissaggregation successful ....', Sys.time()); print(Message)
                                   WBCIS_Dissaggregated_exposure.db             <<- as.data.frame(WBCIS_Dissaggregated_exposure.db)
                                   WBCIS_Display_Dissaggregated_exposure.db     <<- Convert_ID_to_Par_Dissagregate(WBCIS_Dissaggregated_exposure.db, adminID.db, Product_type.db) 
                                   WBCIS_Display_Dissaggregated_exposure.db     =  WBCIS_Display_Dissaggregated_exposure.db[,c(-6)] #remove 'is modelled' tab
@@ -365,7 +364,7 @@ shinyServer(function(input, output) {
                        UserInput.db    <- MNAIS_Dissaggregated_exposure.db
                        Historic_gy.db  =  Get_Guaranteed_gy(Historic_gy.db , UserInput.db, Exposure.db)
                        Synthetic_gy.db =  Get_Guaranteed_gy(Synthetic_gy.db, UserInput.db, Exposure.db)
-                       Message=paste('MNAIS - Attach Guaranteed Yield ....', Sys.time()); print(Message)
+                       #Message=paste('MNAIS - Attach Guaranteed Yield ....', Sys.time()); print(Message)
 
                      # Replace Synthetic Guaranteed GY by Historic Guaranteed GY
                         tmp.Historic_gy.db = Historic_gy.db[,-8:-9] #remove year and actual yield
@@ -374,7 +373,7 @@ shinyServer(function(input, output) {
                         x = merge(Synthetic_gy.db, tmp.Historic_gy.db, by=c('State_ID','District_ID','CropSeasonID'))
                         Synthetic_gy.db = x[,c(-10:-14)]#[,-13:-20]
                         colnames(Synthetic_gy.db) <- c('State_ID','District_ID','CropSeasonID','TSI','Modelled','Planted_Area','Indemnity','Year','Yield','Guaranteed_GY')
-                        Message=paste('MNAIS - Replace Synthetic Guaranteed GY by Historic Guaranteed GY ....', Sys.time()); print(Message)
+                        #Message=paste('MNAIS - Replace Synthetic Guaranteed GY by Historic Guaranteed GY ....', Sys.time()); print(Message)
                      #.................................................................................
 
                      #...............................................................................
@@ -384,11 +383,11 @@ shinyServer(function(input, output) {
                         IND_LOSS_Synthetic_gy.db         <<- Compute_Indemnity_loss(Synthetic_gy.db)
                         Display_IND_LOSS_Historic_gy.db  <<- Convert_ID_to_Par_detailed_Losses(IND_LOSS_Historic_gy.db, adminID.db, Product_type.db)
                         Display_IND_LOSS_Synthetic_gy.db <<- Convert_ID_to_Par_detailed_Losses(IND_LOSS_Synthetic_gy.db, adminID.db, Product_type.db)
-                        Message=paste('MNAIS - Indemnity loss computed ....', Sys.time()); print(Message)
+                        #Message=paste('MNAIS - Indemnity loss computed ....', Sys.time()); print(Message)
                      
                         LOSS_Historic_gy.db        <-  Compute_aggregate(IND_LOSS_Historic_gy.db, Product_type.db, adminID.db)
                         LOSS_Synthetic_gy.db       <-  Compute_aggregate(IND_LOSS_Synthetic_gy.db, Product_type.db, adminID.db)
-                        Message=paste('MNAIS - Level Aggregation computed ....', Sys.time()); print(Message)
+                        #Message=paste('MNAIS - Level Aggregation computed ....', Sys.time()); print(Message)
 
                         L1_loss_Historic_gy.final  <<- unique(LOSS_Historic_gy.db[LOSS_Historic_gy.db[,1]   == 'level1',])
                         L2_loss_Historic_gy.final  <<- unique(LOSS_Historic_gy.db[LOSS_Historic_gy.db[,1]   == 'level2',])
@@ -416,8 +415,6 @@ shinyServer(function(input, output) {
                      #...............................................................................
                   })
 
-
-
                     #------------------------------------------------------------------------
                     # Compute Simulation
                         observe({
@@ -436,12 +433,12 @@ shinyServer(function(input, output) {
                            LossP           =  as.numeric(as.character(WBCIS.tmp[,7]))
                            Indemnity_Loss  =  TSI * LossP
                            WBCIS.final     <<-  cbind(WBCIS.tmp, Indemnity_Loss)
-                           Message=paste('WBCIS - Loss Computed ....', Sys.time()); print(Message)
+                           #Message=paste('WBCIS - Loss Computed ....', Sys.time()); print(Message)
                       #...............................................................................
 
 
                           Aggregated_WBCIS_Losses <- Compute_aggregate_WBCIS(WBCIS.final, Product_type.db, adminID.db)
-                          Message=paste('WBCIS - Level Aggregation computed ....', Sys.time()); print(Message)
+                          #Message=paste('WBCIS - Level Aggregation computed ....', Sys.time()); print(Message)
                           L1_WBCIS_loss.final     <<- unique(Aggregated_WBCIS_Losses[Aggregated_WBCIS_Losses[,1]   == 'level1',])
                           L2_WBCIS_loss.final     <<- unique(Aggregated_WBCIS_Losses[Aggregated_WBCIS_Losses[,1]   == 'level2',])
                           L3_WBCIS_loss.final     <<- unique(Aggregated_WBCIS_Losses[Aggregated_WBCIS_Losses[,1]   == 'level3',])
@@ -450,12 +447,6 @@ shinyServer(function(input, output) {
                           isolate({output$WBCISLosses  <- renderDataTable({return(Aggregated_WBCIS_Losses)},  options = list(orderClasses = TRUE))}) #isolate
                         #------------------------------------------------------------------------
                                })
-
-                     
-
-
-
-
 
                         #------------------------------------------------------------------------
                         # Download Historic Losses
@@ -479,8 +470,6 @@ shinyServer(function(input, output) {
                           filename = function()     { paste('Level5_WBCIS_Losses.csv', sep='') },
                           content  = function(file) {write.csv(WBCIS.final, file)})
                         #------------------------------------------------------------------------
-
-                   
  
                         #------------------------------------------------------------------------
                         # Download Historic Losses
@@ -527,65 +516,15 @@ shinyServer(function(input, output) {
                           filename = function()     { paste('Level5_Synthetic_Losses', '.csv', sep='') },
                           content  = function(file) {write.csv(Display_IND_LOSS_Synthetic_gy.db, file)})
                        #------------------------------------------------------------------------
-
-
- 
                    
-                   #------------------------------------------------------------------------
-                   # Display Interactive Map
-                      output$myChart <- renderMap({
-                      map3 <- Leaflet$new()
-                      map3$tileLayer(provider = "MapQuestOpen.OSM")
-                      map3$set(width = 1600, height = 800)
-                      map3$setView(c(20,78), zoom = 4)
-                      map3
-                     })
-                   #------------------------------------------------------------------------
+                       #------------------------------------------------------------------------
+                       # Display Interactive Map
+                         output$myChart <- renderMap({
+                         map3 <- Leaflet$new()
+                         map3$tileLayer(provider = "MapQuestOpen.OSM")
+                         map3$set(width = 1600, height = 800)
+                         map3$setView(c(20,78), zoom = 4)
+                         map3
+                         })
+                       #------------------------------------------------------------------------
 })#on.exit(rm(list=ls(all=TRUE)))
-
-
-
-#                         Historic_State_crop_year_aggregated.db <- Compute_Crop_State_year_aggregate(IND_LOSS_Historic_gy.db, Product_type.db)
-#                         Synthetic_State_crop_year_aggregated.db <- Compute_Crop_State_year_aggregate(IND_LOSS_Synthetic_gy.db, Product_type.db)
-# 
-#                         Historic_State_year_aggregated.db <- Compute_State_year_aggregate(Historic_State_crop_year_aggregated.db)
-#                         Synthetic_State_year_aggregated.db <- Compute_State_year_aggregate(Synthetic_State_crop_year_aggregated.db)
-#...............................................................................
-
-
-#                      #...............................................................................
-#                      # Compute Crop District Aggregation
-#                          loss_Historic_gy.db          <<- Compute_Crop_District_aggregate(IND_LOSS_Historic_gy.db)
-#                          loss_Synthetic_gy.db         <<- Compute_Crop_District_aggregate(IND_LOSS_Synthetic_gy.db)
-#                          Display_loss_Historic_gy.db  <<- Convert_ID_to_Par_Losses(loss_Historic_gy.db, adminID.db, Product_type.db)
-#                          Display_loss_Synthetic_gy.db <<- Convert_ID_to_Par_Losses(loss_Synthetic_gy.db, adminID.db, Product_type.db)
-#                      #...............................................................................
-
-#...............................................................................
-# Prepare data for output
-#    Display_loss_Historic_gy.final  <<- prepare_loss_data_for_display(LOSS_Historic_gy.db)
-#   Display_loss_Synthetic_gy.final <<- prepare_loss_data_for_display(LOSS_Synthetic_gy.db)
-
-
-
-#                      # busyIndicator
-#                      output$plot1 <- renderPlot({
-#                        if (input$busyBtn == 0) 
-#                          return()
-#                        Sys.sleep(3)
-#                        hist(rnorm(10^3))
-#                      })
-
-#reactive row-selection 
-#                        rowSelect <<- reactive({
-#                           if(is.null(input[["row"]])) 1 #initialize
-#                           else as.numeric(input[["row"]])
-#                           print(row)})
-#                      
-#                      
-#                      # User-selected sorting of dataset
-#                           output$UserInput = renderDataTable({
-#                                     addRadioButtons <- paste0('<input type="radio" name="row', 1:nrow(display_array), '" value="', 1:nrow(display_array), '">',"")
-#                                     #Display table with radio buttons
-#                                      cbind(Pick=addRadioButtons, display_array[, , drop=FALSE])
-#                                   }, options = list(bSortClasses = TRUE, aLengthMenu = c(5, 25, 50), iDisplayLength = 25))
