@@ -86,6 +86,7 @@ display.flag <<- 0
                    output$ModelledLosses  <- renderDataTable({return(NULL)}, options = list(orderClasses = TRUE))
                    output$WBCISLosses  <- renderDataTable({return(NULL)},  options = list(orderClasses = TRUE))
                    #output$Data_Audit_LOB_Pie   <- renderPlot({NULL)})
+                   source('global.R')
                    })
                    })
   
@@ -108,7 +109,7 @@ display.flag <<- 0
                        on.exit(progress$close())
                        
                        updateProgress <- function(value = NULL, detail = NULL) 
-                       {if (is.null(value)) {value <- progress$getValue(); value <- value + (progress$getMax() - value) / 5; Sys.sleep(1)}
+                       {if (is.null(value)) {value <- progress$getValue(); value <- value + (progress$getMax() - value) / 7; Sys.sleep(1)}
                          progress$set(value = value, detail = detail)}
                        
                        
@@ -117,9 +118,10 @@ display.flag <<- 0
                      #-------------------------------------------------------------------------------------------------
                      # Get and check user input file
                        raw_input  <<- read.csv(inFile$datapath, header = T, sep = ',', quote = input$quote)  # No dependency on input$dataset
+                       if (is.function(updateProgress)) {updateProgress(detail = 'Validating User Input ...........')}
                        Checked_raw_input <- Check_UserInput(raw_input, adminID.db, Exposure.db, Product_type.db)
                        Message=paste('Validated User Input ...........', Sys.time()); print(Message)
-                       if (is.function(updateProgress)) {updateProgress(detail = 'Validated User Input ...........')}
+                       if (is.function(updateProgress)) {updateProgress(detail = 'Validation Successful ...........')}
                        
                      #-------------------------------------------------------------------------------------------------
                      # prepare data for UI Display
@@ -141,6 +143,7 @@ display.flag <<- 0
 
                         if(!is.null(MNAISdata_audit_array))
                            {
+                          if (is.function(updateProgress)) {updateProgress(detail = 'MNAIS Data Audit computing ...........')}
                             State = rownames(MNAISdata_audit_array)
                             MNAISdata_audit_display_array <<- cbind(State, format(MNAISdata_audit_array, scientific=FALSE))
                             output$MNAISDataAudit <- renderDataTable({return(MNAISdata_audit_display_array)}, options = list(orderClasses = TRUE))
@@ -156,6 +159,7 @@ display.flag <<- 0
 
                          if(!is.null(WBCISdata_audit_array))
                            {
+                           if (is.function(updateProgress)) {updateProgress(detail = 'MNAIS Data Audit computing ...........')}
                             State = rownames(WBCISdata_audit_array)
                             WBCISdata_audit_display_array <<- cbind(State, format(WBCISdata_audit_array, scientific=FALSE))
                             output$WBCISDataAudit <- renderDataTable({return(WBCISdata_audit_display_array)}, options = list(orderClasses = TRUE))
@@ -366,19 +370,19 @@ display.flag <<- 0
                                      
                                  #...............................................................................
                                  # ASSUMPTION USER INPUT DOES NOT CONTAIN ANY UNMODELLED DISTRICTS ANY MORE
-                                   MNAIS_Exposure.db                            <-  get_mutually_exclusive_exposure(MNAIS_display_array, Exposure.db) # get mutually exclusive modelled states
-                                   MNAIS_Dissaggregated_exposure.db             <-  disaggregate_exposure(MNAIS_Exposure.db, MNAIS_display_array)
+                                 MNAIS_Exposure.db                            <-  get_mutually_exclusive_exposure(MNAIS_display_array, Exposure.db) # get mutually exclusive modelled states
+                                 MNAIS_Dissaggregated_exposure.db             <-  disaggregate_exposure(MNAIS_Exposure.db, MNAIS_display_array)
                                    Message=paste('MNAIS Dissaggregation successful ....', Sys.time()); print(Message)
                                    if (is.function(updateProgress)) {updateProgress(detail = 'MNAIS Dissaggregation successful ...........')}
                                  
                                    MNAIS_Dissaggregated_exposure.db             <<- as.data.frame(MNAIS_Dissaggregated_exposure.db)
                                    MNAIS_Display_Dissaggregated_exposure.db     <<- Convert_ID_to_Par_Dissagregate(MNAIS_Dissaggregated_exposure.db, adminID.db, Product_type.db) 
-                                   MNAIS_Display_Dissaggregated_exposure.db     =   MNAIS_Display_Dissaggregated_exposure.db[,c(-6)] #remove 'is modelled' tab
+                                   MNAIS_Display_Dissaggregated_exposure.db     =   MNAIS_Display_Dissaggregated_exposure.db[,c(-6), drop=FALSE] #remove 'is modelled' tab
                                    MNAIS_Display_Dissaggregated_exposure.db[,5] <-  format(round((as.numeric(as.character(MNAIS_Display_Dissaggregated_exposure.db[,5]))), 0), numeric = TRUE) 
                                    MNAIS_Display_Dissaggregated_exposure.db[,6] <-  format(round((as.numeric(as.character(MNAIS_Display_Dissaggregated_exposure.db[,6]))), 0), numeric = TRUE)
                                    MNAIS_Display_Dissaggregated_exposure.db[,5] =   format(MNAIS_Display_Dissaggregated_exposure.db[,5], scientific = FALSE)
                                    MNAIS_Display_Dissaggregated_exposure.db[,6] =   format(MNAIS_Display_Dissaggregated_exposure.db[,6], scientific = FALSE)
-                                   MNAIS_Display_Dissaggregated_exposure.final  <<-  MNAIS_Display_Dissaggregated_exposure.db
+                                   MNAIS_Display_Dissaggregated_exposure.final  <<-  MNAIS_Display_Dissaggregated_exposure.db[,, drop = FALSE]
                                    isolate({output$MNAISDisplayDissaggregated   <-  renderDataTable({return(MNAIS_Display_Dissaggregated_exposure.final)}, options = list(orderClasses = TRUE))}) #isolate
                                 #...............................................................................
                                 }
@@ -408,14 +412,14 @@ display.flag <<- 0
                                   Message=paste('WBCIS Dissaggregation successful ....', Sys.time()); print(Message)
                                   if (is.function(updateProgress)) {updateProgress(detail = 'WBCIS Dissaggregation successful ...........')}
 
-                                  WBCIS_Dissaggregated_exposure.db             <<- as.data.frame(WBCIS_Dissaggregated_exposure.db)
+                                  WBCIS_Dissaggregated_exposure.db             <<- as.data.frame(WBCIS_Dissaggregated_exposure.db, drop = FALSE)
                                   WBCIS_Display_Dissaggregated_exposure.db     <<- Convert_ID_to_Par_Dissagregate(WBCIS_Dissaggregated_exposure.db, adminID.db, Product_type.db) 
-                                  WBCIS_Display_Dissaggregated_exposure.db     =   WBCIS_Display_Dissaggregated_exposure.db[,c(-6)] #remove 'is modelled' tab
+                                  WBCIS_Display_Dissaggregated_exposure.db     =   WBCIS_Display_Dissaggregated_exposure.db[,c(-6), drop = FALSE] #remove 'is modelled' tab
                                   #WBCIS_Display_Dissaggregated_exposure.db[,5] <-  format(round((as.numeric(as.character(WBCIS_Display_Dissaggregated_exposure.db[,6]))), 0), numeric = TRUE) 
                                   #WBCIS_Display_Dissaggregated_exposure.db[,6] <-  format(round((as.numeric(as.character(WBCIS_Display_Dissaggregated_exposure.db[,7]))), 0), numeric = TRUE)
                                   #WBCIS_Display_Dissaggregated_exposure.db[,5] =   format(WBCIS_Display_Dissaggregated_exposure.db[,5], scientific = FALSE)
                                   #WBCIS_Display_Dissaggregated_exposure.db[,6] =   format(WBCIS_Display_Dissaggregated_exposure.db[,6], scientific = FALSE)
-                                  WBCIS_Display_Dissaggregated_exposure.final  <<- WBCIS_Display_Dissaggregated_exposure.db
+                                  WBCIS_Display_Dissaggregated_exposure.final  <<- WBCIS_Display_Dissaggregated_exposure.db[,, drop = FALSE]
                                   isolate({output$WBCISDisplayDissaggregated   <-  renderDataTable({return(WBCIS_Display_Dissaggregated_exposure.final)}, options = list(orderClasses = TRUE))}) #isolate
                               #...............................................................................
                         }     }

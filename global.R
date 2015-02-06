@@ -368,7 +368,7 @@
  # Convert all state, district and crop season to ID's
  Convert_ID_to_Par_Dissagregate <- function(Dissaggregated_exposure.db, adminID.db, Product_type.db)
  {
-   #  Dissaggregated_exposure.db = WBCIS_Dissaggregated_exposure.db
+   #  Dissaggregated_exposure.db = MNAIS_Dissaggregated_exposure.db
    StateID.Array    = unique(adminID.db[,c(-1,-3,-5)])
    DistrictID.Array = unique(adminID.db[,c(-1,-2,-4)])
    
@@ -382,9 +382,9 @@
      
      
      StateID      = StateID.Array   [StateID.Array[,2]    %in% State,   ] 
-     if(!is.na(District)){DistrictID  = DistrictID.Array[DistrictID.Array[,2] %in% District,]}
+     if(!is.na(District)){DistrictID  = DistrictID.Array[DistrictID.Array[,2] %in% District,,drop = FALSE]}
      
-     CropID       = Product_type.db[as.numeric(Product_type.db[,4]) %in% as.numeric(Crop),]
+     CropID       = Product_type.db[as.numeric(Product_type.db[,4]) %in% as.numeric(Crop),, drop = FALSE]
      
      tmp.ID[i,1]  = toString(lapply(StateID[1], as.character))
      if(!is.na(District)){ tmp.ID[i,2] = toString(lapply(DistrictID[1], as.character))}
@@ -394,8 +394,8 @@
    
    
    
-   
-   converted = cbind(tmp.ID, Dissaggregated_exposure.db[,4:7])
+   x = Dissaggregated_exposure.db[,4:7, drop = FALSE]
+   converted = cbind(tmp.ID, x)
    colnames(converted) <- c('State_Name','District_name',
                             'Crop_Name', 'Season_Name','TSI',
                             'Modelled', 'Planted_Area', 'Indemnity')
@@ -539,22 +539,36 @@
                  #state.db[,2][is.na(state.db[,2])] <- -9999
                  District_levels  = unique(state.db$District_ID)
 
-                for(k in 1:length(District_levels))
-                   {
+                   if(!is.na(District_levels))
+                      {
+                        for(k in 1:length(District_levels))
+                            {
 
-                     d_id = as.numeric(as.character(District_levels[k]))
-                     district.db = state.db[state.db[,2] == d_id,]
+                             d_id = as.numeric(as.character(District_levels[k]))
+                             district.db = state.db[state.db[,2] == d_id,]
 
-                     sumTSI = sum(as.numeric(district.db[,4]))
-                     tmp = district.db[1,]
-                     tmp[,4] = sumTSI
-                     #tmp[tmp == -9999] <- NA
+                             sumTSI = sum(as.numeric(district.db[,4]))
+                             tmp = district.db[1,,drop=FALSE]
+                             tmp[,4] = sumTSI
 
-                     if(agg_flag == 1) {tmp.x = rbind(tmp.x, tmp)}
-                     if(agg_flag == 0) {tmp.x = tmp; agg_flag = 1}
-                    }
-                  }
-            }
+  
+                             if(agg_flag == 1) {tmp.x = rbind(tmp.x, tmp)}
+                             if(agg_flag == 0) {tmp.x = tmp; agg_flag = 1}
+                            }
+                       }
+                        
+                        if(is.na(District_levels))
+                          {
+                            
+                            sumTSI = sum(as.numeric(state.db[,4]))
+                            tmp = state.db[1,,drop=FALSE]
+                            tmp[,4] = sumTSI
+                            
+                            
+                            if(agg_flag == 1) {tmp.x = rbind(tmp.x, tmp)}
+                            if(agg_flag == 0) {tmp.x = tmp; agg_flag = 1}
+                          }
+            }}
     
           UserInput.db = tmp.x
 
@@ -580,13 +594,32 @@
                    ex.state_crop.db <- ex.Crop.db[ex.Crop.db[,2] == st_id,]
 
                   #Join Exposure and User input together
-                    tmp_contract_id  =  ui.Crop.db$Contract_Number[1]
-                    tmp.db           = merge(ui.state_crop.db, ex.state_crop.db, by='District_ID')
-                    tmp.district <- as.numeric(as.character(tmp.db$District_ID))
+                    if(!is.na(ui.state_crop.db$District_ID))
+                      {
+                        tmp_contract_id  =  ui.Crop.db$Contract_Number[1]
+                        tmp.db           = merge(ui.state_crop.db, ex.state_crop.db, by='District_ID')
+                        tmp.district <-   as.numeric(as.character(tmp.db$District_ID))
 
-                    state_crop.db    = cbind(st_id, tmp.district, CS_id, tmp.db$TSI, 
+                        state_crop.db    = cbind(st_id, tmp.district, CS_id, tmp.db$TSI, 
                                             tmp.db[,8], tmp.db$Planted_Area, tmp.db[,9])
                                            #  Modelled                         Indemnity
+                      }
+                   
+                  if(is.na(ui.state_crop.db$District_ID))
+                    {
+                     
+                      tmp_contract_id  =  ui.Crop.db$Contract_Number[1]
+                      tmp.db           = merge(ui.state_crop.db, ex.state_crop.db, by='State_ID', all=TRUE)
+                      tmp.district <-   as.numeric(as.character(tmp.db$District_ID.y))
+                      
+                      tmp.ui.state_crop.db = cbind(ui.state_crop.db, NA,NA,NA)
+
+                      state_crop.db    = cbind(st_id, tmp.district, CS_id, tmp.db$TSI, 
+                                               tmp.db[,8], tmp.db$Planted_Area, tmp.db[,9])
+                                              #  Modelled                         Indemnity
+                      
+                    }
+                    
                     colnames(state_crop.db) <- c('State_ID', 'District_ID', 'CropSeasonID',  'TSI', 'Modelled', 'Planted_Area', 'Indemnity')
 
 
@@ -599,7 +632,10 @@
 
                     district_test   = is.na(st_cr_district)
                     district_test   = as.data.frame(table(district_test))
-
+                   
+                    tmp.flag.TRUE = 0; TRUE_count = 0
+                    tmp.flag.FALSE = 0; FALSE_count = 
+                  
                     tmp.flag.TRUE   = district_test[district_test[,1] == 'TRUE',]
                     tmp.flag.FALSE  = district_test[district_test[,1] == 'FALSE',]
 
@@ -689,7 +725,7 @@
                     if(reporting_char == 3)
                        {
                       #isolate state level entries
-                        state_level_entry    = state_crop.db[is.na(state_crop.db[,7]),,drop = FALSE]
+                        state_level_entry    = tmp.ui.state_crop.db
                         
 
                       #Isolate modelled crops
@@ -698,12 +734,13 @@
                          modelled_entries[,4][is.na(modelled_entries[,4])] <- 0
 
                       #isolate modelled crops where TSI = 0
-                        to_distribute_tsi = modelled_entries[modelled_entries[,4] == 0,,drop = FALSE]
+                        to_distribute_tsi = modelled_entries[,,drop=FALSE]
+                        to_distribute_tsi[,4] = NA
  
                       #compute ratio
 
                          ratio_array = as.numeric(to_distribute_tsi[,6])
-                         for(a in 1:length(ratio_array)) { to_distribute_tsi[a,4] = (ratio_array[a]/sum(ratio_array)) * state_level_entry[4] }
+                         for(a in 1:length(ratio_array)) { to_distribute_tsi[a,4] = (ratio_array[a]/sum(ratio_array)) * as.numeric(state_level_entry[4]) }
  
                        #combine arrays
                          distributed.ui.state_crop.db = to_distribute_tsi
@@ -728,6 +765,8 @@
      
      #   UserInput.db = MNAIS_display_array
      
+     #   UserInput.db = MNAIS_display_array
+     
      #aggregate data at respective admin level to avoid 
      x=UserInput.db[,c(-5,-6)] #remove EPI and PR
      agg_flag = 0
@@ -749,22 +788,36 @@
          #state.db[,2][is.na(state.db[,2])] <- -9999
          District_levels  = unique(state.db$District_ID)
          
-         for(k in 1:length(District_levels))
+         if(!is.na(District_levels))
+         {
+           for(k in 1:length(District_levels))
+           {
+             
+             d_id = as.numeric(as.character(District_levels[k]))
+             district.db = state.db[state.db[,2] == d_id,]
+             
+             sumTSI = sum(as.numeric(district.db[,4]))
+             tmp = district.db[1,,drop=FALSE]
+             tmp[,4] = sumTSI
+             
+             
+             if(agg_flag == 1) {tmp.x = rbind(tmp.x, tmp)}
+             if(agg_flag == 0) {tmp.x = tmp; agg_flag = 1}
+           }
+         }
+         
+         if(is.na(District_levels))
          {
            
-           d_id = as.numeric(as.character(District_levels[k]))
-           district.db = state.db[state.db[,2] == d_id,]
-           
-           sumTSI = sum(as.numeric(district.db[,4]))
-           tmp = district.db[1,]
+           sumTSI = sum(as.numeric(state.db[,4]))
+           tmp = state.db[1,,drop=FALSE]
            tmp[,4] = sumTSI
-           #tmp[tmp == -9999] <- NA
+           
            
            if(agg_flag == 1) {tmp.x = rbind(tmp.x, tmp)}
            if(agg_flag == 0) {tmp.x = tmp; agg_flag = 1}
          }
-       }
-     }
+       }}
      
      UserInput.db = tmp.x
      
@@ -790,13 +843,32 @@
          ex.state_crop.db <- ex.Crop.db[ex.Crop.db[,2] == st_id,]
          
          #Join Exposure and User input together
-         tmp_contract_id  =  ui.Crop.db$Contract_Number[1]
-         tmp.db           = merge(ui.state_crop.db, ex.state_crop.db, by='District_ID')
-         tmp.district <- as.numeric(as.character(tmp.db$District_ID))
+         if(!is.na(ui.state_crop.db$District_ID))
+         {
+           tmp_contract_id  =  ui.Crop.db$Contract_Number[1]
+           tmp.db           = merge(ui.state_crop.db, ex.state_crop.db, by='District_ID')
+           tmp.district <-   as.numeric(as.character(tmp.db$District_ID))
+           
+           state_crop.db    = cbind(st_id, tmp.district, CS_id, tmp.db$TSI, 
+                                    tmp.db[,8], tmp.db$Planted_Area, tmp.db[,9])
+           #  Modelled                         Indemnity
+         }
          
-         state_crop.db    = cbind(st_id, tmp.district, CS_id, tmp.db$TSI, 
-                                  tmp.db[,11], tmp.db$Planted_Area, tmp.db[,9])
-         #  Modelled                         Indemnity
+         if(is.na(ui.state_crop.db$District_ID))
+         {
+           
+           tmp_contract_id  =  ui.Crop.db$Contract_Number[1]
+           tmp.db           = merge(ui.state_crop.db, ex.state_crop.db, by='State_ID', all=TRUE)
+           tmp.district <-   as.numeric(as.character(tmp.db$District_ID.y))
+           
+           tmp.ui.state_crop.db = cbind(ui.state_crop.db, NA,NA,NA)
+           
+           state_crop.db    = cbind(st_id, tmp.district, CS_id, tmp.db$TSI, 
+                                    tmp.db[,11], tmp.db$Planted_Area, tmp.db[,9])
+           #  Modelled                         Indemnity
+           
+         }
+         
          colnames(state_crop.db) <- c('State_ID', 'District_ID', 'CropSeasonID',  'TSI', 'Modelled', 'Planted_Area', 'Indemnity')
          
          
@@ -810,7 +882,10 @@
          district_test   = is.na(st_cr_district)
          district_test   = as.data.frame(table(district_test))
          
-         tmp.flag.TRUE   = district_test[district_test[,1] == 'TRUE',]
+         tmp.flag.TRUE = 0; TRUE_count = 0
+         tmp.flag.FALSE = 0; FALSE_count = 
+           
+           tmp.flag.TRUE   = district_test[district_test[,1] == 'TRUE',]
          tmp.flag.FALSE  = district_test[district_test[,1] == 'FALSE',]
          
          if(nrow(tmp.flag.TRUE) > 0) {TRUE_count  = district_test[district_test[,1] == 'TRUE',] ; TRUE_Count = TRUE_count[1,2]}
@@ -899,7 +974,7 @@
          if(reporting_char == 3)
          {
            #isolate state level entries
-           state_level_entry    = state_crop.db[is.na(state_crop.db[,7]),,drop = FALSE]
+           state_level_entry    = tmp.ui.state_crop.db
            
            
            #Isolate modelled crops
@@ -908,12 +983,13 @@
            modelled_entries[,4][is.na(modelled_entries[,4])] <- 0
            
            #isolate modelled crops where TSI = 0
-           to_distribute_tsi = modelled_entries[modelled_entries[,4] == 0,,drop = FALSE]
+           to_distribute_tsi = modelled_entries[,,drop=FALSE]
+           to_distribute_tsi[,4] = NA
            
            #compute ratio
            
            ratio_array = as.numeric(to_distribute_tsi[,6])
-           for(a in 1:length(ratio_array)) { to_distribute_tsi[a,4] = (ratio_array[a]/sum(ratio_array)) * state_level_entry[4] }
+           for(a in 1:length(ratio_array)) { to_distribute_tsi[a,4] = (ratio_array[a]/sum(ratio_array)) * as.numeric(state_level_entry[4]) }
            
            #combine arrays
            distributed.ui.state_crop.db = to_distribute_tsi
