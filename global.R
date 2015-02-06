@@ -368,6 +368,7 @@
  # Convert all state, district and crop season to ID's
  Convert_ID_to_Par_Dissagregate <- function(Dissaggregated_exposure.db, adminID.db, Product_type.db)
  {
+   #  Dissaggregated_exposure.db = WBCIS_Dissaggregated_exposure.db
    StateID.Array    = unique(adminID.db[,c(-1,-3,-5)])
    DistrictID.Array = unique(adminID.db[,c(-1,-2,-4)])
    

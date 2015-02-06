@@ -5,6 +5,7 @@ source('global.R')
 library(rMaps)
 library(leafletR)
 library(rCharts)
+library(shinyIncubator)
 
 
 
@@ -47,6 +48,10 @@ library(rCharts)
 
                            sidebarLayout(
                              sidebarPanel(
+                               
+                               # Action Button
+                               actionButton("ClearDisplay", "Clear Previous User Input"),
+                               
                                # Contract Name  
                                textInput(inputId = 'Unique_Contract_Name', label = 'Contract Name', value = ""),
                                
