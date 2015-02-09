@@ -6,6 +6,7 @@ library(lattice)
 library(dplyr)
 library(plotGoogleMaps)
 source('global.R')
+source('global_check_user_input.R')
 library(leafletR)
 library(rMaps)
 library(shinyIncubator)
@@ -45,7 +46,7 @@ display.flag <<- 0
 
     
          #------------------------------------------------------------------------
-         # read in a file and store in display array
+         # Clean all varibales and screen
            observe({
                    input$ClearDisplay
                    if (input$ClearDisplay == 0)
@@ -119,7 +120,7 @@ display.flag <<- 0
                      # Get and check user input file
                        raw_input  <<- read.csv(inFile$datapath, header = T, sep = ',', quote = input$quote)  # No dependency on input$dataset
                        if (is.function(updateProgress)) {updateProgress(detail = 'Validating User Input ...........')}
-                       Checked_raw_input <- Check_UserInput(raw_input, adminID.db, Exposure.db, Product_type.db)
+                       Checked_raw_input <- Check_UserInput(raw_input, adminID.db, Exposure.db, Product_type.db, Check_UserInput_Name_Mismatch,  Check_UserInput_Prepare_Exposure_db, Check_UserInput_modelled_adminlevel, Check_UserInput_TSI_check)
                        Message=paste('Validated User Input ...........', Sys.time()); print(Message)
                        if (is.function(updateProgress)) {updateProgress(detail = 'Validation Successful ...........')}
                        
@@ -345,24 +346,24 @@ display.flag <<- 0
                       updateProgress <- function(value = NULL, detail = NULL) 
                       {if (is.null(value)) {value <- progress$getValue(); value <- value + (progress$getMax() - value) / 8; Sys.sleep(1)}
                        progress$set(value = value, detail = detail)}
-                      
-                      
-                      
+
+
+
                       # allow for district errors to pass through
-                       display_array[display_array == 'All'] <- NA
                        MNAIS_display_array <- display_array[,-9]; if (is.function(updateProgress)) {updateProgress(detail = 'MNAIS array filtered ...........')}
                        WBCIS_display_array <- display_array[,-8]; if (is.function(updateProgress)) {updateProgress(detail = 'WBCIS array filtered ...........')}
-                       
+
                        #options(warn=-1)
                         if(!is.null(MNAIS_display_array))
                             {
-                                MNAIS_display_array[MNAIS_display_array[,8]=='Crop by District not modelled',8] <- 'Good'
-                                MNAIS_display_array[MNAIS_display_array[,8]=='District mismatch',8] <- 'Good'
-                                MNAIS_display_array = as.data.frame(MNAIS_display_array[MNAIS_display_array[,8] == 'Good',])
-                                Message=paste('MNAIS Dissaggregation filter successful ....', Sys.time()); print(Message)
-                                if (is.function(updateProgress)) {updateProgress(detail = 'MNAIS Dissaggregation filter successful ...........')}
-                              
-                              
+
+                              MNAIS_display_array[MNAIS_display_array[,8]=='Crop by District not modelled',2] <- 'All'
+                              MNAIS_display_array[MNAIS_display_array[,8]=='District mismatch',2] <- 'All'
+                              #MNAIS_display_array[MNAIS_display_array[,2] == 'All',2] <- NA
+                              MNAIS_display_array[MNAIS_display_array[,8]=='Crop by District not modelled',8] <- 'Good'
+                              MNAIS_display_array[MNAIS_display_array[,8]=='District mismatch',8] <- 'Good'
+                              MNAIS_display_array  = MNAIS_display_array[MNAIS_display_array[,8] == 'Good',]
+                          
                              if(nrow(MNAIS_display_array) > 0)
                                  { 
                                      MNAIS_display_array = Convert_Par_to_ID(MNAIS_display_array, adminID.db, Product_type.db)
@@ -370,8 +371,8 @@ display.flag <<- 0
                                      
                                  #...............................................................................
                                  # ASSUMPTION USER INPUT DOES NOT CONTAIN ANY UNMODELLED DISTRICTS ANY MORE
-                                 MNAIS_Exposure.db                            <-  get_mutually_exclusive_exposure(MNAIS_display_array, Exposure.db) # get mutually exclusive modelled states
-                                 MNAIS_Dissaggregated_exposure.db             <-  disaggregate_exposure(MNAIS_Exposure.db, MNAIS_display_array)
+                                   MNAIS_Exposure.db                            <-  get_mutually_exclusive_exposure(MNAIS_display_array, Exposure.db) # get mutually exclusive modelled states
+                                   MNAIS_Dissaggregated_exposure.db             <-  disaggregate_exposure(MNAIS_Exposure.db, MNAIS_display_array, Aggregate_user_exposure, district_state_level_disaggregation, district_level_disaggregation, state_level_disaggregation)
                                    Message=paste('MNAIS Dissaggregation successful ....', Sys.time()); print(Message)
                                    if (is.function(updateProgress)) {updateProgress(detail = 'MNAIS Dissaggregation successful ...........')}
                                  
@@ -390,16 +391,12 @@ display.flag <<- 0
 
                          if(!is.null(WBCIS_display_array))
                             {
-
-                              WBCIS_display_array[WBCIS_display_array[,8]=='Crop by District not modelled',8] <- 'Good'
-                              WBCIS_display_array[WBCIS_display_array[,8]=='District mismatch',8] <- 'Good'
- 
-                              WBCIS_display_array = WBCIS_display_array[WBCIS_display_array[,8] == 'Good',]
-
-                              #WBCIS_display_array[WBCIS_display_array=='All'] = NA
-                              Message=paste('WBCIS Dissaggregation filter successful ....', Sys.time()); print(Message)
-                              if (is.function(updateProgress)) {updateProgress(detail = 'WBCIS Dissaggregation filter successful ...........')}
-                              
+                             WBCIS_display_array[WBCIS_display_array[,8]=='Crop by District not modelled',2] <- 'All'
+                             WBCIS_display_array[WBCIS_display_array[,8]=='District mismatch',2] <- 'All'
+                             WBCIS_display_array[WBCIS_display_array[,8]=='Crop by District not modelled',8] <- 'Good'
+                             WBCIS_display_array[WBCIS_display_array[,8]=='District mismatch',8] <- 'Good'
+                             WBCIS_display_array  = WBCIS_display_array[WBCIS_display_array[,8] == 'Good',]
+                           
                              if(nrow(WBCIS_display_array) > 0)
                                 {
                                   WBCIS_display_array = Convert_Par_to_ID(WBCIS_display_array, adminID.db, Product_type.db)
@@ -408,17 +405,17 @@ display.flag <<- 0
 #                               #...............................................................................
 #                               # ASSUMPTION USER INPUT DOES NOT CONTAIN ANY UNMODELLED DISTRICTS ANY MORE
                                   WBCIS_Exposure.db                            <- get_mutually_exclusive_exposure(WBCIS_display_array, Exposure.db)
-                                  WBCIS_Dissaggregated_exposure.db             <-  disaggregate_exposure_WBCIS(WBCIS_Exposure.db, WBCIS_display_array)
+                                  WBCIS_Dissaggregated_exposure.db             <-  disaggregate_exposure_WBCIS(WBCIS_Exposure.db, WBCIS_display_array,Aggregate_user_exposure, district_state_level_disaggregation, district_level_disaggregation, state_level_disaggregation)
                                   Message=paste('WBCIS Dissaggregation successful ....', Sys.time()); print(Message)
                                   if (is.function(updateProgress)) {updateProgress(detail = 'WBCIS Dissaggregation successful ...........')}
 
                                   WBCIS_Dissaggregated_exposure.db             <<- as.data.frame(WBCIS_Dissaggregated_exposure.db, drop = FALSE)
                                   WBCIS_Display_Dissaggregated_exposure.db     <<- Convert_ID_to_Par_Dissagregate(WBCIS_Dissaggregated_exposure.db, adminID.db, Product_type.db) 
                                   WBCIS_Display_Dissaggregated_exposure.db     =   WBCIS_Display_Dissaggregated_exposure.db[,c(-6), drop = FALSE] #remove 'is modelled' tab
-                                  #WBCIS_Display_Dissaggregated_exposure.db[,5] <-  format(round((as.numeric(as.character(WBCIS_Display_Dissaggregated_exposure.db[,6]))), 0), numeric = TRUE) 
-                                  #WBCIS_Display_Dissaggregated_exposure.db[,6] <-  format(round((as.numeric(as.character(WBCIS_Display_Dissaggregated_exposure.db[,7]))), 0), numeric = TRUE)
-                                  #WBCIS_Display_Dissaggregated_exposure.db[,5] =   format(WBCIS_Display_Dissaggregated_exposure.db[,5], scientific = FALSE)
-                                  #WBCIS_Display_Dissaggregated_exposure.db[,6] =   format(WBCIS_Display_Dissaggregated_exposure.db[,6], scientific = FALSE)
+                                  WBCIS_Display_Dissaggregated_exposure.db[,5] <-  format(round((as.numeric(as.character(WBCIS_Display_Dissaggregated_exposure.db[,5]))), 0), numeric = TRUE) 
+                                  WBCIS_Display_Dissaggregated_exposure.db[,6] <-  format(round((as.numeric(as.character(WBCIS_Display_Dissaggregated_exposure.db[,6]))), 0), numeric = TRUE)
+                                  WBCIS_Display_Dissaggregated_exposure.db[,5] =   format(WBCIS_Display_Dissaggregated_exposure.db[,5], scientific = FALSE)
+                                  WBCIS_Display_Dissaggregated_exposure.db[,6] =   format(WBCIS_Display_Dissaggregated_exposure.db[,6], scientific = FALSE)
                                   WBCIS_Display_Dissaggregated_exposure.final  <<- WBCIS_Display_Dissaggregated_exposure.db[,, drop = FALSE]
                                   isolate({output$WBCISDisplayDissaggregated   <-  renderDataTable({return(WBCIS_Display_Dissaggregated_exposure.final)}, options = list(orderClasses = TRUE))}) #isolate
                               #...............................................................................
@@ -459,7 +456,7 @@ display.flag <<- 0
                       on.exit(progress$close())
                       
                       updateProgress <- function(value = NULL, detail = NULL) 
-                      {if (is.null(value)) {value <- progress$getValue(); value <- value + (progress$getMax() - value) / 4; Sys.sleep(1)}
+                      {if (is.null(value)) {value <- progress$getValue(); value <- value + (progress$getMax() - value) / 5; Sys.sleep(1)}
                        progress$set(value = value, detail = detail)}
                       
                       
@@ -467,25 +464,16 @@ display.flag <<- 0
                      #...............................................................................
                      # Attach Guaranteed Yield
                        UserInput.db    <- MNAIS_Dissaggregated_exposure.db
-                       Historic_gy.db  =  Get_Guaranteed_gy(Historic_gy.db , UserInput.db, Exposure.db)
-                       Synthetic_gy.db =  Get_Guaranteed_gy(Synthetic_gy.db, UserInput.db, Exposure.db)
+                       Historic_gy.db  =  Get_Guaranteed_gy(Historic_gy.db , UserInput.db, Exposure.db); if (is.function(updateProgress)) {updateProgress(detail = 'MNAIS - Attached Guaranteed Yield to Historic exposure ...........')}
+                       Synthetic_gy.db =  Get_Guaranteed_gy(Synthetic_gy.db, UserInput.db, Exposure.db); if (is.function(updateProgress)) {updateProgress(detail = 'MNAIS - Attached Guaranteed Yield to Synthetic exposure ...........')}
                        Message=paste('MNAIS - Attach Guaranteed Yield ....', Sys.time()); print(Message)
-                       if (is.function(updateProgress)) {updateProgress(detail = 'MNAIS - Attached Guaranteed Yield to Historic exposure ...........')}
 
-                     # Replace Synthetic Guaranteed GY by Historic Guaranteed GY
-                        tmp.Historic_gy.db = Historic_gy.db[,-8:-9] #remove year and actual yield
-                        tmp.Historic_gy.db = unique(tmp.Historic_gy.db)
- 
-                        x = merge(Synthetic_gy.db, tmp.Historic_gy.db, by=c('State_ID','District_ID','CropSeasonID'))
-                        Synthetic_gy.db = x[,c(-10:-14)]#[,-13:-20]
-                        colnames(Synthetic_gy.db) <- c('State_ID','District_ID','CropSeasonID','TSI','Modelled','Planted_Area','Indemnity','Year','Yield','Guaranteed_GY')
-                        Message=paste('MNAIS - Attached Guaranteed Yield to Synthetic exposure ....', Sys.time()); print(Message)
-                       if (is.function(updateProgress)) {updateProgress(detail = 'MNAIS - Attached Guaranteed Yield to Synthetic exposure ...........')}
                      #.................................................................................
 
                      #...............................................................................
                      # Compute Indemnity Loss
                      # gy.db = Historic_gy.db
+                     if (is.function(updateProgress)) {updateProgress(detail = 'MNAIS - Indemnity loss computing ...............')}
                         IND_LOSS_Historic_gy.db          <<- Compute_Indemnity_loss(Historic_gy.db)
                         IND_LOSS_Synthetic_gy.db         <<- Compute_Indemnity_loss(Synthetic_gy.db)
                         Display_IND_LOSS_Historic_gy.db  <<- Convert_ID_to_Par_detailed_Losses(IND_LOSS_Historic_gy.db, adminID.db, Product_type.db)
@@ -523,6 +511,11 @@ display.flag <<- 0
                         isolate({output$ModelledLosses  <- renderDataTable({return(Synthetic_summary_display_final)}, options = list(orderClasses = TRUE))}) #isolate
                      #...............................................................................
                   })
+          #------------------------------------------------------------------------ 
+
+
+
+
 
                     #------------------------------------------------------------------------
                     # Compute Simulation

@@ -50,7 +50,7 @@ library(shinyIncubator)
                              sidebarPanel(
                                
                                # Action Button
-                               actionButton("ClearDisplay", "Clear Previous User Input"),
+                               actionButton("ClearDisplay", "Clear Previous Analysis"),
                                
                                # Contract Name  
                                textInput(inputId = 'Unique_Contract_Name', label = 'Contract Name', value = ""),
