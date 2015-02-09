@@ -1,4 +1,11 @@
- library(shiny)
+#---------------------------------------------------------------
+# IARP Version 1.3
+# Added user identified indemnity
+# 9th February 2015
+# Nirav Khimashia
+#---------------------------------------------------------------
+
+library(shiny)
 #library(leaflet)
 library(RColorBrewer)
 library(scales)
@@ -111,7 +118,7 @@ display.flag <<- 0
                        
                        updateProgress <- function(value = NULL, detail = NULL) 
                        {if (is.null(value)) {value <- progress$getValue(); value <- value + (progress$getMax() - value) / 7; Sys.sleep(1)}
-                         progress$set(value = value, detail = detail)}
+                       progress$set(value = value, detail = detail)}
                        
                        
                       
@@ -138,8 +145,8 @@ display.flag <<- 0
 
                       #---------------------------------------------------------------------------------------------
                       # perform MNAIS data audit and display in to the UI
-                        MNAIS_display_array <- display_array[,-9]
-                        MNAISdata_audit_array <<- Perform_Data_Audit(MNAIS_display_array)
+                        MNAIS_display_array <- display_array[,-10]
+                        MNAISdata_audit_array <<- as.data.frame(Perform_Data_Audit(MNAIS_display_array))
                         x_flag = 0
 
                         if(!is.null(MNAISdata_audit_array))
@@ -149,12 +156,13 @@ display.flag <<- 0
                             MNAISdata_audit_display_array <<- cbind(State, format(MNAISdata_audit_array, scientific=FALSE))
                             output$MNAISDataAudit <- renderDataTable({return(MNAISdata_audit_display_array)}, options = list(orderClasses = TRUE))
                             x_flag = 1
+                            MNAISdata_audit_array <<- as.data.frame(MNAISdata_audit_array)
                             Message=paste('MNAIS Data Audit computed ....', Sys.time()); print(Message)
                             if (is.function(updateProgress)) {updateProgress(detail = 'MNAIS Data Audit computed ...........')}
                            }
                       
                        # perform WBCIS data audit and display in to the UI
-                         WBCIS_display_array   <- display_array[,-8]
+                         WBCIS_display_array   <- display_array[,-9]
                          WBCISdata_audit_array <<- Perform_Data_Audit(WBCIS_display_array)
                          y_flag = 0                       
 
@@ -165,14 +173,15 @@ display.flag <<- 0
                             WBCISdata_audit_display_array <<- cbind(State, format(WBCISdata_audit_array, scientific=FALSE))
                             output$WBCISDataAudit <- renderDataTable({return(WBCISdata_audit_display_array)}, options = list(orderClasses = TRUE))
                             y_flag = 1
+                            WBCISdata_audit_array <<- as.data.frame(WBCISdata_audit_array)
                             Message=paste('WBCIS Data Audit computed ....', Sys.time()); print(Message)
                             if (is.function(updateProgress)) {updateProgress(detail = 'WBCIS Data Audit computed ...........')}
                            }
                      
-                         if((x_flag == 1) && (y_flag == 0)){output$Data_Audit_LOB_Pie   <- renderPlot({LOB_Pie_Plot_1(MNAISdata_audit_array, "MNAIS Line of Business")})}
-                         if((x_flag == 0) && (y_flag == 1)){output$Data_Audit_LOB_Pie   <- renderPlot({LOB_Pie_Plot_1(WBCISdata_audit_array, "WBCIS Line of Business")})}
-                         if((x_flag == 1) && (y_flag == 1)){output$Data_Audit_LOB_Pie   <- renderPlot({LOB_Pie_Plot(MNAISdata_audit_array,WBCISdata_audit_array)})}
-                         if (is.function(updateProgress)) {updateProgress(detail = 'LOB Graphics computed ...........')}
+                         #if((x_flag == 1) && (y_flag == 0)){output$Data_Audit_LOB_Pie   <- renderPlot({LOB_Pie_Plot_1(MNAISdata_audit_array, "MNAIS Line of Business")})}
+                         #if((x_flag == 0) && (y_flag == 1)){output$Data_Audit_LOB_Pie   <- renderPlot({LOB_Pie_Plot_1(WBCISdata_audit_array, "WBCIS Line of Business")})}
+                         #if((x_flag == 1) && (y_flag == 1)){output$Data_Audit_LOB_Pie   <- renderPlot({LOB_Pie_Plot(MNAISdata_audit_array,WBCISdata_audit_array)})}
+                         #if (is.function(updateProgress)) {updateProgress(detail = 'LOB Graphics computed ...........')}
                      #---------------------------------------------------------------------------------------------
                      
                       # Pie Chart with Percentages
@@ -350,23 +359,18 @@ display.flag <<- 0
 
 
                       # allow for district errors to pass through
-                       MNAIS_display_array <- display_array[,-9]; if (is.function(updateProgress)) {updateProgress(detail = 'MNAIS array filtered ...........')}
-                       WBCIS_display_array <- display_array[,-8]; if (is.function(updateProgress)) {updateProgress(detail = 'WBCIS array filtered ...........')}
+                       MNAIS_display_array <- display_array[,-10]; if (is.function(updateProgress)) {updateProgress(detail = 'MNAIS array filtered ...........')}
+                       WBCIS_display_array <- display_array[,-9]; if (is.function(updateProgress)) {updateProgress(detail = 'WBCIS array filtered ...........')}
 
                        #options(warn=-1)
                         if(!is.null(MNAIS_display_array))
                             {
 
-                              MNAIS_display_array[MNAIS_display_array[,8]=='Crop by District not modelled',2] <- 'All'
-                              MNAIS_display_array[MNAIS_display_array[,8]=='District mismatch',2] <- 'All'
-                              #MNAIS_display_array[MNAIS_display_array[,2] == 'All',2] <- NA
-                              MNAIS_display_array[MNAIS_display_array[,8]=='Crop by District not modelled',8] <- 'Good'
-                              MNAIS_display_array[MNAIS_display_array[,8]=='District mismatch',8] <- 'Good'
-                              MNAIS_display_array  = MNAIS_display_array[MNAIS_display_array[,8] == 'Good',]
+                              MNAIS_display_array  = MNAIS_display_array[MNAIS_display_array[,9] == 'Good',]
                           
                              if(nrow(MNAIS_display_array) > 0)
                                  { 
-                                     MNAIS_display_array = Convert_Par_to_ID(MNAIS_display_array, adminID.db, Product_type.db)
+                                     MNAIS_display_array = as.data.frame(Convert_Par_to_ID(MNAIS_display_array, adminID.db, Product_type.db))
                                      Message=paste('MNAIS Parameter to ID Conversion successful ....', Sys.time()); print(Message)
                                      
                                  #...............................................................................
@@ -391,15 +395,12 @@ display.flag <<- 0
 
                          if(!is.null(WBCIS_display_array))
                             {
-                             WBCIS_display_array[WBCIS_display_array[,8]=='Crop by District not modelled',2] <- 'All'
-                             WBCIS_display_array[WBCIS_display_array[,8]=='District mismatch',2] <- 'All'
-                             WBCIS_display_array[WBCIS_display_array[,8]=='Crop by District not modelled',8] <- 'Good'
-                             WBCIS_display_array[WBCIS_display_array[,8]=='District mismatch',8] <- 'Good'
-                             WBCIS_display_array  = WBCIS_display_array[WBCIS_display_array[,8] == 'Good',]
+
+                             WBCIS_display_array  = WBCIS_display_array[WBCIS_display_array[,9] == 'Good',]
                            
                              if(nrow(WBCIS_display_array) > 0)
                                 {
-                                  WBCIS_display_array = Convert_Par_to_ID(WBCIS_display_array, adminID.db, Product_type.db)
+                                  WBCIS_display_array = as.data.frame(Convert_Par_to_ID(WBCIS_display_array, adminID.db, Product_type.db))
                                   Message=paste('WBCIS Parameter to ID Conversion successful ....', Sys.time()); print(Message)
                                   
 #                               #...............................................................................

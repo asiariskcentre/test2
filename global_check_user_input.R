@@ -29,13 +29,13 @@ Check_UserInput_Name_Mismatch <- function(UserInput.db,adminID.db,Exposure.db,Pr
   
   
   # store all mismatches
-  Column_names_output <- c('rownumber','State_Name','District_Name','Crop','Season','TSI','EPI','Premium_rate','MNAIS_Check','WBCIS_Check') 
+  Column_names_output <- c('rownumber','State_Name','District_Name','Crop','Season','TSI','EPI','Premium_rate','Indemnity','MNAIS_Check','WBCIS_Check') 
   
   if(nrow(State_mismatch)    > 0) {State_mismatch     <- cbind(State_mismatch,    'State mismatch'   , 'State mismatch')   ; colnames(State_mismatch)    <- Column_names_output} 
   if(nrow(District_mismatch) > 0) {District_mismatch  <- cbind(District_mismatch, 'District mismatch', 'District mismatch'); colnames(District_mismatch) <- Column_names_output}
   if(nrow(Crop_mismatch)     > 0) {Crop_mismatch      <- cbind(Crop_mismatch,     'Crop mismatch'    , 'Crop mismatch')    ; colnames(Crop_mismatch)     <- Column_names_output}
   if(nrow(Season_mismatch)   > 0) {Season_mismatch    <- cbind(Season_mismatch,   'Season mismatch'  , 'Season mismatch')  ; colnames(Season_mismatch)   <- Column_names_output}
-  if(nrow(UserInput.db)      > 0) {UserInput.db          <- cbind(UserInput.db,   'Good'  , 'Good')  ; colnames(UserInput.db)   <- Column_names_output}
+  if(nrow(UserInput.db)      > 0) {UserInput.db       <- cbind(UserInput.db,       'Good'            , 'Good'           )  ; colnames(UserInput.db)   <- Column_names_output}
   UserInput.db <- rbind(UserInput.db,State_mismatch, District_mismatch, Crop_mismatch, Season_mismatch)
   #..........................................................................................................
   
@@ -108,71 +108,70 @@ Check_UserInput_Prepare_Exposure_db <- function(adminID.db,Exposure.db,Product_t
         #UserInput.db2 = as.matrix(UserInput_name_mismatch)
       # remove all mismatches except district
       # x=UserInput.db2[UserInput.db2[,9]  == 'District mismatch',]
-        UserInput.db2[UserInput.db2[,9]  == 'District mismatch',3]  <- 'All'
-        UserInput.db2[UserInput.db2[,9]  == 'District mismatch',9]  <- 'Good'
-        UserInput.db2[UserInput.db2[,10] == 'District mismatch',10] <- 'Good'
-        UserInput.db <- UserInput.db2[UserInput.db2[,9] == 'Good',]
-        UserInput.db <- UserInput.db[,c(-9,-10)]
+        UserInput.db2[UserInput.db2[,10]  == 'District mismatch',3]  <- 'All'
+        UserInput.db2[UserInput.db2[,10]  == 'District mismatch',10] <- 'Good'
+        UserInput.db2[UserInput.db2[,11]  == 'District mismatch',11] <- 'Good'
+        UserInput.db <- UserInput.db2[UserInput.db2[,10] == 'Good',]
+        UserInput.db <- UserInput.db[,c(-10,-11)]
 
       # merge with user input
         ui = merge(UserInput.db, Exposure.db, by=c('State_Name','District_Name','Crop','Season'), all.x = TRUE)
-        ui = cbind(ui[,5],ui[,1:4], ui[,6:10], ui[,9:10])
-        colnames(ui) <- c('rownumber', 'State_Name','District_Name','Crop','Season','TSI','EPI','Premium_rate','Is_MNAIS_Modeled','Is_WBCIS_Modeled','State_Is_MNAIS_Modeled','State_Is_WBCIS_Modeled')
+        ui = cbind(ui[,5],ui[,1:4], ui[,6:11], ui[,10:11])
+        colnames(ui) <- c('rownumber', 'State_Name','District_Name','Crop','Season','TSI','EPI','Premium_rate','Indemnity','Is_MNAIS_Modeled','Is_WBCIS_Modeled','State_Is_MNAIS_Modeled','State_Is_WBCIS_Modeled')
 
        state_levels <- unique(as.character(ui$State_Name))
        db_flag = 0
 
-      for(i in 1:length(state_levels))
-         {
-          st_l        = state_levels[i]
-          state.ui.db = ui[as.character(ui[,2]) == st_l,]
-          crop_levels = unique(as.character(state.ui.db$Crop))
+       for(i in 1:length(state_levels))
+          {
+           st_l        = state_levels[i]
+           state.ui.db = ui[as.character(ui[,2]) == st_l,]
+           crop_levels = unique(as.character(state.ui.db$Crop))
 
-          for(j in 1:length(crop_levels))
-             {
-               cr_l       = crop_levels[j]
-               crop.ui.db = state.ui.db[as.character(state.ui.db[,4]) == cr_l,]
-               season_levels = unique(as.character(state.ui.db$Season))
+           for(j in 1:length(crop_levels))
+              {
+                cr_l       = crop_levels[j]
+                crop.ui.db = state.ui.db[as.character(state.ui.db[,4]) == cr_l,]
+                season_levels = unique(as.character(state.ui.db$Season))
 
-            for(k in 1:length(season_levels))
-               {
-                sn_l = season_levels[k]
-                season.ui.db = crop.ui.db[crop.ui.db[,5] == sn_l,]
+              for(k in 1:length(season_levels))
+                 {
+                  sn_l = season_levels[k]
+                  season.ui.db = crop.ui.db[crop.ui.db[,5] == sn_l,]
 
-               if(nrow(season.ui.db)> 0)
-                     {
-                       mnais <- sum(season.ui.db$State_Is_MNAIS_Modeled)
-                       wbcis <- sum(season.ui.db$State_Is_WBCIS_Modeled)
+                  if(nrow(season.ui.db)> 0)
+                       {
+                         mnais <- sum(season.ui.db$State_Is_MNAIS_Modeled)
+                         wbcis <- sum(season.ui.db$State_Is_WBCIS_Modeled)
 
-                       if(mnais == 0){season.ui.db[,11] = 0}
-                       if(wbcis == 0){season.ui.db[,12] = 0}
-                       if(mnais > 0) {season.ui.db[,11] = 1}
-                       if(wbcis > 0) {season.ui.db[,12] = 1}
-                      }
-        
-        if(db_flag == 1){ final.ui <- rbind(final.ui, season.ui.db)}    
-        if(db_flag == 0){ final.ui <- season.ui.db; db_flag = 1    }
-      }    }      }
-  
-      ui = cbind(final.ui, final.ui[,11:12])
+                         if(mnais == 0){season.ui.db[,12] = 0}
+                         if(wbcis == 0){season.ui.db[,13] = 0}
+                         if(mnais > 0) {season.ui.db[,12] = 1}
+                         if(wbcis > 0) {season.ui.db[,13] = 1}
+                        }
 
-      colnames(ui) <- c('rownames','State_Name','District_Name','Crop','Season','TSI','EPI','Premium_rate',
-                        'Is_MNAIS_Modeled','Is_WBCIS_Modeled','State_Is_MNAIS_Modeled','State_Is_WBCIS_Modeled',
-                        'MNAIS_Check', 'WBCIS_Check')
+         if(db_flag == 1){ final.ui <- rbind(final.ui, season.ui.db)}    
+         if(db_flag == 0){ final.ui <- season.ui.db; db_flag = 1    }
+         }    }      }
+
+      ui = cbind(final.ui, final.ui[,12:13])
+
+      colnames(ui) <- c('rownames','State_Name','District_Name','Crop','Season','TSI','EPI',
+                        'Premium_rate','Indemnity','Is_MNAIS_Modeled','Is_WBCIS_Modeled',
+                        'State_Is_MNAIS_Modeled','State_Is_WBCIS_Modeled','MNAIS_Check', 'WBCIS_Check')
 
       ui = as.matrix(ui)
 
      # put in flags
-
-      ui[ui[,9] == 0,  13] <- 'Crop by District not modelled'
       ui[ui[,10] == 0,  14] <- 'Crop by District not modelled'
+      ui[ui[,11] == 0,  15] <- 'Crop by District not modelled'
 
-      ui[ui[,11] == 0, 13] <- 'Crop by State not modelled'
       ui[ui[,12] == 0, 14] <- 'Crop by State not modelled'
+      ui[ui[,13] == 0, 15] <- 'Crop by State not modelled'
 
-      UserInput.db = ui[,c(-9,-10,-11,-12)]
-      UserInput.db[UserInput.db[,9]  == 1,9] <- 'Good'
-      UserInput.db[UserInput.db[,10] == 1,10] <- 'Good'
+      UserInput.db = ui[,c(-10,-11,-12,-13)]
+      UserInput.db[UserInput.db[,10]  == 1,10] <- 'Good'
+      UserInput.db[UserInput.db[,11] == 1 ,11] <- 'Good'
 
       return(UserInput.db)
      }
@@ -196,6 +195,7 @@ Check_UserInput_Prepare_Exposure_db <- function(adminID.db,Exposure.db,Product_t
                     TSI      = as.numeric(as.character(UserInput.db[i,6]))
                     EPI      = as.numeric(as.character(UserInput.db[i,7]))
                     PR       = as.numeric(as.character(UserInput.db[i,8]))
+
 
                     if(is.na(TSI) || (TSI == 0)){TSI_flag = 0; TSI = 0}
                     if(is.na(EPI) || (EPI == 0)){EPI_flag = 0; EPI = 0}
@@ -229,7 +229,7 @@ Check_UserInput_Prepare_Exposure_db <- function(adminID.db,Exposure.db,Product_t
                       {
                         tmp.tsi = as.numeric(EPI) / as.numeric(PR)
                          UserInput.db[i,5] = as.numeric(tmp.tsi)
-                       }
+                      }
                 }
              }
   
@@ -277,7 +277,7 @@ Check_UserInput_Prepare_Exposure_db <- function(adminID.db,Exposure.db,Product_t
          options(warn=-1);UserInput.db[is.na(UserInput.db[,2]),2] <- 'All';options(warn=0);
 
          UserInput.db = cbind(rownames(UserInput.db), UserInput.db)
-         colnames(UserInput.db) <- c('rownumber','State_Name','District_Name','Crop','Season','TSI','EPI','Premium_rate')
+         colnames(UserInput.db) <- c('rownumber','State_Name','District_Name','Crop','Season','TSI','EPI','Premium_rate', 'Indemnity')
   
          #...............................................................................
          #  a) check if all  State_ID & District_ID are valid.
@@ -317,29 +317,29 @@ Check_UserInput_Prepare_Exposure_db <- function(adminID.db,Exposure.db,Product_t
                for(i in 1:rowL)
                  {
                     name_mismatch       <- as.matrix(UserInput_name_mismatch[as.numeric(as.character(UserInput_name_mismatch[,1])) == i,,drop = FALSE])
-                    MNAIS_name_mismatch <- as.character(name_mismatch[1,9,drop=FALSE])
-                    WBCIS_name_mismatch <- as.character(name_mismatch[1,10,drop=FALSE])
+                    MNAIS_name_mismatch <- as.character(name_mismatch[1,10,drop=FALSE])
+                    WBCIS_name_mismatch <- as.character(name_mismatch[1,11,drop=FALSE])
 
 
                      is_modelled         <- as.matrix(UserInput_is_modelled[as.numeric(as.character(UserInput_is_modelled[,1])) == i,,drop = FALSE])
                      if(nrow(is_modelled) > 0)
                         {
-                          MNAIS_is_modelled   <- as.character(is_modelled[1,9,drop=FALSE])
-                          WBCIS_is_modelled   <- as.character(is_modelled[1,10,drop=FALSE])
+                          MNAIS_is_modelled   <- as.character(is_modelled[1,10,drop=FALSE])
+                          WBCIS_is_modelled   <- as.character(is_modelled[1,11,drop=FALSE])
                          }
 
                      TSI_Check           <- as.matrix(UserInput_TSI_check[as.numeric(as.character(UserInput_TSI_check[,1])) == i,,drop = FALSE])
                      if(nrow(TSI_Check) > 0)
                          {
-                           MNAIS_TSI_Check     <- as.character(TSI_Check[1,9,drop=FALSE])
-                           WBCIS_TSI_Check     <- as.character(TSI_Check[1,10,drop=FALSE])
+                           MNAIS_TSI_Check     <- as.character(TSI_Check[1,10,drop=FALSE])
+                           WBCIS_TSI_Check     <- as.character(TSI_Check[1,11,drop=FALSE])
                          }
 
-                     if(nrow(is_modelled) > 0){ if(MNAIS_is_modelled != 'Good'){name_mismatch[1,9] <- as.character(MNAIS_is_modelled)}}
-                     if(nrow(TSI_Check) > 0) { if(MNAIS_TSI_Check   != 'Good'){name_mismatch[1,9] <- as.character(MNAIS_TSI_Check)}}
+                     if(nrow(is_modelled) > 0){ if(MNAIS_is_modelled != 'Good'){name_mismatch[1,10] <- as.character(MNAIS_is_modelled)}}
+                     if(nrow(TSI_Check) > 0) { if(MNAIS_TSI_Check   != 'Good'){name_mismatch[1,10] <- as.character(MNAIS_TSI_Check)}}
 
-                     if(nrow(is_modelled) > 0){ if(WBCIS_is_modelled != 'Good'){name_mismatch[1,10] <- as.character(WBCIS_is_modelled)}}
-                     if(nrow(TSI_Check) > 0) { if(WBCIS_TSI_Check   != 'Good'){name_mismatch[1,10] <- as.character(WBCIS_TSI_Check)}}
+                     if(nrow(is_modelled) > 0){ if(WBCIS_is_modelled != 'Good'){name_mismatch[1,11] <- as.character(WBCIS_is_modelled)}}
+                     if(nrow(TSI_Check) > 0) { if(WBCIS_TSI_Check   != 'Good'){name_mismatch[1,11] <- as.character(WBCIS_TSI_Check)}}
                      
 
                     if(final_flag == 1){ final.ui <- rbind(final.ui, name_mismatch)}    
