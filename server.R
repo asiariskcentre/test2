@@ -365,8 +365,7 @@ display.flag <<- 0
                        #options(warn=-1)
                         if(!is.null(MNAIS_display_array))
                             {
-
-                              MNAIS_display_array  = MNAIS_display_array[MNAIS_display_array[,9] == 'Good',]
+                              MNAIS_display_array <- deduct_district_error_tsi(MNAIS_display_array)
                           
                              if(nrow(MNAIS_display_array) > 0)
                                  { 
@@ -396,7 +395,7 @@ display.flag <<- 0
                          if(!is.null(WBCIS_display_array))
                             {
 
-                             WBCIS_display_array  = WBCIS_display_array[WBCIS_display_array[,9] == 'Good',]
+                              WBCIS_display_array <- deduct_district_error_tsi(WBCIS_display_array)
                            
                              if(nrow(WBCIS_display_array) > 0)
                                 {

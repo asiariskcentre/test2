@@ -4,9 +4,10 @@
         {
          #...............................................................................
          # isolate good user entries
-         # display_array[display_array[,9]=='Crop by District not modelled',8] <- 'Good'
-         # display_array[display_array[,9]=='District mismatch',8] <- 'Good'
+          display_array[display_array[,9]=='Crop by District not modelled',9] <- 'Deduct'
+          display_array[display_array[,9]=='District mismatch',9] <- 'Deduct'
 
+           deduct <- display_array[display_array[,9] == 'Deduct',]
            Data_Audit_Name_Array <- display_array[display_array[,9] == 'Good',]
            Data_Audit_Name_Array <- Data_Audit_Name_Array[,-8:-9]
          #...............................................................................
@@ -26,12 +27,15 @@
                      {
                        state_id = toString(State_levels[j])
                        state.db = Data_Audit_Name_Array[Data_Audit_Name_Array[,1] == state_id,]
+                       state.deduct = deduct[deduct[,1] == state_id,]
  
  
                        for(k in 1:length(Crop_levels))
                           {
                            crop_id = toString(Crop_levels[k])
                            crop.db = state.db[state.db[,3] == crop_id,]
+                           if(nrow(state.deduct) > 0 ){crop.deduct = state.deduct[state.deduct[,3] == crop_id,]}
+                           if(nrow(state.deduct) == 0 ){crop.deduct = NULL}
                            
                            state_crop.db <- crop.db[crop.db[,2] == 'All',,drop=FALSE] #see if the entry is reported at state level
                            
@@ -55,9 +59,12 @@
                            if((nrow(state_crop.db) > 0) && (nrow(crop.db) > nrow(state_crop.db)))
                                 {
                                    x = crop.db[crop.db[,2] != 'All',]
-                                   #District_TSI = sum(as.numeric(x[,5]))
+                                   District_TSI = sum(as.numeric(x[,5]))
+                                   if(!is.null(crop.deduct)){deduct_tsi = sum(as.numeric(crop.deduct[,5]))}
+                                   if(is.null(crop.deduct)){deduct_tsi = 0}
+
                                    State_TSI    = sum(as.numeric(state_crop.db[,5]))
-                                   Total_TSI    = State_TSI# - District_TSI
+                                   Total_TSI    = State_TSI - deduct_tsi
                                    if(Total_TSI < 0){Total_TSI = 'Error'}
                                    output_array[j,k] <- as.data.frame(Total_TSI)
                                  } 
@@ -1500,3 +1507,86 @@
      return(final)
    }
    #...............................................................................
+   
+   
+   
+   
+   
+   #...............................................................................
+   # Cdeduct_district_error_tsi
+   
+   deduct_district_error_tsi <- function(display_array)
+   {
+      display_array[display_array[,9]=='Crop by District not modelled',9] <- 'Deduct'
+       display_array[display_array[,9]=='District mismatch',9] <- 'Deduct'
+   
+   
+      deduct_display_array  = display_array[display_array[,9] == 'Deduct',]
+      good_display_array  = display_array[display_array[,9] == 'Good',]
+      x=rbind(good_display_array, deduct_display_array)
+   
+   
+      db.flag = 0
+   
+   
+      UI_State    = unique((as.character(x$State_Name)))
+   
+   
+   
+      for(i in 1:length(UI_State))
+         {
+           ST_ID = UI_State[i]
+           state.db = x[x[,1] == ST_ID,]
+     
+          UI_Crop     = unique((as.character(state.db$Crop)))
+     
+          for(j in 1:length(UI_Crop))
+             {
+               CR_id   = UI_Crop[j]
+               crop.db = state.db[state.db[,3] == CR_id,]
+       
+               UI_Season   = unique((as.character(crop.db$Season)))
+       
+              for(k in 1:length(UI_Season))
+                 {
+                   SN_ID = UI_Season[k]
+                   season.db = crop.db[crop.db[,4] == SN_ID,]
+         
+                   deduct_flag = 0
+                   state_flag  = 0
+                   deduct_flag = nrow(season.db[season.db[,9] == 'Deduct',])
+         
+                   if(deduct_flag > 0)
+                      {
+                       state_flag = nrow(season.db[season.db[,2] == 'All',])
+                      
+                        if(state_flag > 0)
+                           {
+                              deduct_tsi = sum(as.numeric(season.db[season.db[,9] == 'Deduct',5]))
+                              All_tsi    = sum(as.numeric(season.db[season.db[,2] == 'All',5]))
+                              New_TSI    = All_tsi - deduct_tsi
+             
+                               if(New_TSI > 0)  {state_entry = season.db[season.db[,2] == 'All',,drop = FALSE]; state_entry[1,5] = New_TSI}
+                               if(New_TSI <= 0) {state_entry = season.db[season.db[,2] == 'All',,drop = FALSE]; state_entry[1,5] = 0}
+             
+                               good = season.db[season.db[,9] == 'Good',,drop = FALSE];
+                               rest = good[good[,2] != 'All', , drop = FALSE]
+                               rest = rbind(rest, state_entry)
+                             }
+           
+                      if(state_flag == 0){rest = season.db[season.db[,9] == 'Good',,drop = FALSE];}
+                      }
+         
+         
+                    if(deduct_flag == 0){rest = season.db}
+          
+                    if(db.flag == 1) {y = rbind(y, rest)}
+                     if(db.flag == 0) {y = rest; db.flag = 1}
+                 }
+                }
+              }
+   
+   
+   return(y)
+   
+   }
