@@ -356,7 +356,7 @@
                non_modelled_entries[is.na(non_modelled_entries[,4]),4] <- 0
 
              # deduct all TSI from modelled at State level
-               state_level_entry[1,4] = as.numeric(state_level_entry[4]) - sum(as.numeric(modelled_entries[,4]))
+               state_level_entry[1,4] = as.numeric(state_level_entry[4]) - sum(as.numeric(modelled_entries[,4]))#- sum(as.numeric(non_modelled_entries[,4]))
 
              # isolate modelled crops where TSI = 0
                to_distribute_tsi = modelled_entries[modelled_entries[,4] == 0,,drop = FALSE]

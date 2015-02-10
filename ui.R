@@ -36,7 +36,7 @@ library(shinyIncubator)
   Unique_SeasonType_i  = unique(Product_type.db$SeasonType)
   Unique_SeasonType    = lapply(Unique_SeasonType_i, as.character)
 
-  shinyUI(navbarPage("IARP BETA", id="nav",
+  shinyUI(navbarPage("IARP BETA V 1.3", id="nav",
 
 
                    # allow for overflow on the drop menus

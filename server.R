@@ -23,6 +23,7 @@ Sys.setlocale(locale="English")
 
 #...............................................................................
 # Load databases
+  DB_Message      =   paste('IARP Version 1.3'); print(DB_Message)
   DB_Message      =   paste('Libraries loaded - ', Sys.time()); print(DB_Message)
   CropSeasons     <-  readRDS('data/CropSeasons.Rds')
   Product_type.db <<- get_Product_type_db(CropSeasons)
