@@ -179,10 +179,10 @@ display.flag <<- 0
                             if (is.function(updateProgress)) {updateProgress(detail = 'WBCIS Data Audit computed ...........')}
                            }
                      
-                         #if((x_flag == 1) && (y_flag == 0)){output$Data_Audit_LOB_Pie   <- renderPlot({LOB_Pie_Plot_1(MNAISdata_audit_array, "MNAIS Line of Business")})}
-                         #if((x_flag == 0) && (y_flag == 1)){output$Data_Audit_LOB_Pie   <- renderPlot({LOB_Pie_Plot_1(WBCISdata_audit_array, "WBCIS Line of Business")})}
-                         #if((x_flag == 1) && (y_flag == 1)){output$Data_Audit_LOB_Pie   <- renderPlot({LOB_Pie_Plot(MNAISdata_audit_array,WBCISdata_audit_array)})}
-                         #if (is.function(updateProgress)) {updateProgress(detail = 'LOB Graphics computed ...........')}
+                         if((x_flag == 1) && (y_flag == 0)){output$Data_Audit_LOB_Pie   <- renderPlot({LOB_Pie_Plot_1(MNAISdata_audit_array, "MNAIS Line of Business")})}
+                         if((x_flag == 0) && (y_flag == 1)){output$Data_Audit_LOB_Pie   <- renderPlot({LOB_Pie_Plot_1(WBCISdata_audit_array, "WBCIS Line of Business")})}
+                         if((x_flag == 1) && (y_flag == 1)){output$Data_Audit_LOB_Pie   <- renderPlot({LOB_Pie_Plot(MNAISdata_audit_array,WBCISdata_audit_array)})}
+                         if (is.function(updateProgress)) {updateProgress(detail = 'LOB Graphics computed ...........')}
                      #---------------------------------------------------------------------------------------------
                      
                       # Pie Chart with Percentages
