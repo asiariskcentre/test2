@@ -4,8 +4,8 @@
         {
          #...............................................................................
          # isolate good user entries
-          display_array[display_array[,9]=='Crop by District not modelled',9] <- 'Deduct'
-          display_array[display_array[,9]=='District mismatch',9] <- 'Deduct'
+           display_array[display_array[,9]=='Crop by District not modelled',9] <- 'Deduct'
+           display_array[display_array[,9]=='District mismatch',9] <- 'Deduct'
 
            deduct <- display_array[display_array[,9] == 'Deduct',]
            Data_Audit_Name_Array <- display_array[display_array[,9] == 'Good',]
@@ -17,8 +17,8 @@
                {
                #...............................................................................
                # Aggregate state by crop
-                 State_levels <- lapply(unique(Data_Audit_Name_Array$State_Name), as.character)
-                 Crop_levels  <- lapply(unique(Data_Audit_Name_Array$Crop), as.character)
+                 State_levels <- unique(as.character(Data_Audit_Name_Array$State_Name))
+                 Crop_levels  <- unique(as.character(Data_Audit_Name_Array$Crop))
                  cropl        = length(Crop_levels)
                  output_array <- array(, dim=c(length(State_levels),cropl))
 
@@ -26,24 +26,24 @@
                   for(j in 1:length(State_levels))
                      {
                        state_id = toString(State_levels[j])
-                       state.db = Data_Audit_Name_Array[Data_Audit_Name_Array[,1] == state_id,]
-                       state.deduct = deduct[deduct[,1] == state_id,]
+                       state.db = Data_Audit_Name_Array[Data_Audit_Name_Array[,1] == state_id,,drop=FALSE]
+                       state.deduct = deduct[deduct[,1] == state_id,,drop=FALSE]
  
  
                        for(k in 1:length(Crop_levels))
                           {
                            crop_id = toString(Crop_levels[k])
-                           crop.db = state.db[state.db[,3] == crop_id,]
-                           if(nrow(state.deduct) > 0 ){crop.deduct = state.deduct[state.deduct[,3] == crop_id,]}
+                           crop.db = state.db[state.db[,3] == crop_id,,drop=FALSE]
+                           if(nrow(state.deduct) > 0 ){crop.deduct = state.deduct[state.deduct[,3] == crop_id,,drop=FALSE]}
                            if(nrow(state.deduct) == 0 ){crop.deduct = NULL}
-                           
+
                            state_crop.db <- crop.db[crop.db[,2] == 'All',,drop=FALSE] #see if the entry is reported at state level
-                           
+
                            #for entries reported at state level only
                            if((nrow(state_crop.db) > 0) && (nrow(crop.db) == nrow(state_crop.db)))
                                   {
                                    Total_TSI = as.numeric(crop.db[,5])
-                                   output_array[j,k] <- sum(as.data.frame(Total_TSI))
+                                   output_array[j,k] <- sum(as.numeric(as.character(Total_TSI)))
                                    }                             
 
                            #for entries only reported at district level only
@@ -52,7 +52,7 @@
                                     if(nrow(crop.db) > 0)
                                       {
                                         Total_TSI = as.numeric(crop.db[,5])
-                                        output_array[j,k] <- sum(as.data.frame(Total_TSI))
+                                        output_array[j,k] <- sum(as.numeric(as.character(Total_TSI)))
                                    }   }
 
                            #for entries only reported at State and district level only
@@ -60,17 +60,17 @@
                                 {
                                    x = crop.db[crop.db[,2] != 'All',]
                                    District_TSI = sum(as.numeric(x[,5]))
-                                   if(!is.null(crop.deduct)){deduct_tsi = sum(as.numeric(crop.deduct[,5]))}
+                                   if(!is.null(crop.deduct)){deduct_tsi = sum(as.numeric(as.character(crop.deduct[,5])))}
                                    if(is.null(crop.deduct)){deduct_tsi = 0}
 
-                                   State_TSI    = sum(as.numeric(state_crop.db[,5]))
-                                   Total_TSI    = State_TSI - deduct_tsi
-                                   if(Total_TSI < 0){Total_TSI = 'Error'}
-                                   output_array[j,k] <- as.data.frame(Total_TSI)
+                                   State_TSI         = sum(as.numeric(as.character(state_crop.db[,5])))
+                                   Total_TSI         = State_TSI - deduct_tsi
+                                   if(Total_TSI < 0) {Total_TSI = 'Error'}
+                                   output_array[j,k] <- sum(as.numeric(as.character(Total_TSI)))
                                  } 
                          }
                      }
-                 
+
                  output_array = as.matrix(output_array)
                  colnames(output_array) <- c(Crop_levels)
                  rownames(output_array) <- c(State_levels)
